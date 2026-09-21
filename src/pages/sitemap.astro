@@ -14,6 +14,7 @@ const links = (await getCollection('links')).filter((l) => !import.meta.env.PROD
 ---
 
 <BaseLayout title="站点地图" description="Ange 网站所有内容的索引">
+  <meta name="pagefind-ignore" content="true" />
   <h1 class="text-3xl font-bold mb-8">站点地图</h1>
 
   <div class="space-y-10">
