@@ -20,6 +20,12 @@ const prev = all[index + 1];
 const next = all[index - 1];
 const minutes = readingMinutes(post.body ?? '');
 const headings = extractHeadings(post.body ?? '');
+const wordCount = (post.body ?? '').replace(/\s/g, '').length;
+
+// 相关文章：同标签，排除自己
+const related = all
+  .filter((p) => p.id !== post.id && p.data.tags.some((t) => post.data.tags.includes(t)))
+  .slice(0, 3);
 ---
 
 <BaseLayout title={post.data.title} description={post.data.summary}>
@@ -28,6 +34,15 @@ const headings = extractHeadings(post.body ?? '');
 
   <div class="flex gap-8">
     <article class="flex-1 min-w-0">
+      <!-- 面包屑 -->
+      <nav class="text-sm text-[var(--color-muted)] mb-6">
+        <a href="/" class="hover:text-[var(--color-accent)]">首页</a>
+        <span class="mx-2">/</span>
+        <a href="/blog" class="hover:text-[var(--color-accent)]">博客</a>
+        <span class="mx-2">/</span>
+        <span class="text-[var(--color-fg)]">{post.data.title}</span>
+      </nav>
+
       <header class="mb-12 pb-8 border-b border-[var(--color-border)]">
         <h1 class="text-3xl md:text-4xl font-bold leading-tight tracking-tight">{post.data.title}</h1>
         <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-[var(--color-muted)]">
@@ -37,11 +52,19 @@ const headings = extractHeadings(post.body ?? '');
             </svg>
             {formatDate(post.data.published)}
           </time>
+          {post.data.updated && (
+            <time datetime={post.data.updated.toISOString()} class="flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+              更新于 {formatDate(post.data.updated)}
+            </time>
+          )}
           <span class="flex items-center gap-1.5">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            约 {minutes} 分钟
+            约 {minutes} 分钟 · {wordCount} 字
           </span>
           {post.data.tags.length > 0 && (
             <span class="flex items-center gap-1.5">
@@ -61,7 +84,33 @@ const headings = extractHeadings(post.body ?? '');
         <Content />
       </div>
 
-      <nav class="mt-20 pt-10 border-t border-[var(--color-border)]">
+      <!-- 分享按钮 -->
+      <div class="mt-12 pt-6 border-t border-[var(--color-border)] flex items-center gap-4">
+        <span class="text-sm text-[var(--color-muted)]">分享：</span>
+        <button id="share-copy" class="text-sm px-3 py-1.5 rounded-md border border-[var(--color-border)] hover:bg-[var(--color-border)] transition-colors">
+          复制链接
+        </button>
+      </div>
+
+      <!-- 相关文章推荐 -->
+      {related.length > 0 && (
+        <section class="mt-12 pt-8 border-t border-[var(--color-border)]">
+          <p class="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider mb-6">相关文章</p>
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((p) => (
+              <a
+                href={`/blog/${p.id}`}
+                class="group block p-5 rounded-xl border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors"
+              >
+                <h3 class="font-medium group-hover:text-[var(--color-accent)] transition-colors">{p.data.title}</h3>
+                <p class="mt-2 text-sm text-[var(--color-muted)] line-clamp-2 leading-relaxed">{p.data.summary}</p>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <nav class="mt-12 pt-8 border-t border-[var(--color-border)]">
         <p class="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider mb-6">继续阅读</p>
         <div class="grid gap-4 sm:grid-cols-2">
           {prev ? (
@@ -118,4 +167,19 @@ const headings = extractHeadings(post.body ?? '');
     pre.style.position = 'relative';
     pre.appendChild(button);
   });
+
+  // 分享：复制链接
+  const shareCopy = document.getElementById('share-copy');
+  if (shareCopy) {
+    shareCopy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        shareCopy.textContent = '已复制';
+        setTimeout(() => (shareCopy.textContent = '复制链接'), 2000);
+      } catch {
+        shareCopy.textContent = '失败';
+        setTimeout(() => (shareCopy.textContent = '复制链接'), 2000);
+      }
+    });
+  }
 </script>
