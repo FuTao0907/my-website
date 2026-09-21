@@ -48,19 +48,21 @@ const excerpt = (body: string) => body.replace(/[#>*`]/g, '').trim().slice(0, 14
   <ul class="mt-8 space-y-4">
     {
       sorted.map((m) => (
-        <li class="p-5 rounded-lg border border-[var(--color-border)]">
-          <div class="flex items-baseline justify-between gap-4">
-            <h2 class="font-semibold">{m.data.title}</h2>
-            {m.data.rating && (
-              <span class="text-[var(--color-accent)]">{'★'.repeat(Math.round(m.data.rating))}</span>
-            )}
-          </div>
-          <div class="mt-1 text-sm text-[var(--color-muted)]">
-            {m.data.artist}
-            {m.data.album && ` · ${m.data.album}`}
-            {m.data.genre && ` · ${m.data.genre}`}
-          </div>
-          {m.body && <p class="mt-2 text-sm text-[var(--color-muted)] leading-relaxed">{excerpt(m.body)}…</p>}
+        <li>
+          <a href={`/collections/music/${m.id}`} class="block p-5 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors">
+            <div class="flex items-baseline justify-between gap-4">
+              <h2 class="font-semibold group-hover:text-[var(--color-accent)]">{m.data.title}</h2>
+              {m.data.rating && (
+                <span class="text-[var(--color-accent)]">{'★'.repeat(Math.round(m.data.rating))}</span>
+              )}
+            </div>
+            <div class="mt-1 text-sm text-[var(--color-muted)]">
+              {m.data.artist}
+              {m.data.album && ` · ${m.data.album}`}
+              {m.data.genre && ` · ${m.data.genre}`}
+            </div>
+            {m.body && <p class="mt-2 text-sm text-[var(--color-muted)] leading-relaxed">{excerpt(m.body)}…</p>}
+          </a>
         </li>
       ))
     }

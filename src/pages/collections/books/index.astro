@@ -47,18 +47,20 @@ const excerpt = (body: string) => body.replace(/[#>*`]/g, '').trim().slice(0, 14
   <ul class="mt-8 space-y-4">
     {
       sorted.map((b) => (
-        <li class="p-5 rounded-lg border border-[var(--color-border)]">
-          <div class="flex items-baseline justify-between gap-4">
-            <h2 class="font-semibold">{b.data.title}</h2>
-            {b.data.rating && (
-              <span class="text-[var(--color-accent)]">{'★'.repeat(Math.round(b.data.rating))}</span>
-            )}
-          </div>
-          <div class="mt-1 text-sm text-[var(--color-muted)]">
-            {b.data.author}
-            {b.data.finishedDate && ` · ${b.data.finishedDate.getFullYear()} 年读完`}
-          </div>
-          {b.body && <p class="mt-2 text-sm text-[var(--color-muted)] leading-relaxed">{excerpt(b.body)}…</p>}
+        <li>
+          <a href={`/collections/books/${b.id}`} class="block p-5 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors">
+            <div class="flex items-baseline justify-between gap-4">
+              <h2 class="font-semibold group-hover:text-[var(--color-accent)]">{b.data.title}</h2>
+              {b.data.rating && (
+                <span class="text-[var(--color-accent)]">{'★'.repeat(Math.round(b.data.rating))}</span>
+              )}
+            </div>
+            <div class="mt-1 text-sm text-[var(--color-muted)]">
+              {b.data.author}
+              {b.data.finishedDate && ` · ${b.data.finishedDate.getFullYear()} 年读完`}
+            </div>
+            {b.body && <p class="mt-2 text-sm text-[var(--color-muted)] leading-relaxed">{excerpt(b.body)}…</p>}
+          </a>
         </li>
       ))
     }

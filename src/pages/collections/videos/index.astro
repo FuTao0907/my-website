@@ -48,18 +48,20 @@ const excerpt = (body: string) => body.replace(/[#>*`]/g, '').trim().slice(0, 14
   <ul class="mt-8 space-y-4">
     {
       sorted.map((v) => (
-        <li class="p-5 rounded-lg border border-[var(--color-border)]">
-          <div class="flex items-baseline justify-between gap-4">
-            <h2 class="font-semibold">{v.data.title}</h2>
-            {v.data.rating && (
-              <span class="text-[var(--color-accent)]">{'★'.repeat(Math.round(v.data.rating))}</span>
-            )}
-          </div>
-          <div class="mt-1 text-sm text-[var(--color-muted)]">
-            {v.data.creator}
-            {v.data.finishedDate && ` · ${v.data.finishedDate.getFullYear()} 年看`}
-          </div>
-          {v.body && <p class="mt-2 text-sm text-[var(--color-muted)] leading-relaxed">{excerpt(v.body)}…</p>}
+        <li>
+          <a href={`/collections/videos/${v.id}`} class="block p-5 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors">
+            <div class="flex items-baseline justify-between gap-4">
+              <h2 class="font-semibold group-hover:text-[var(--color-accent)]">{v.data.title}</h2>
+              {v.data.rating && (
+                <span class="text-[var(--color-accent)]">{'★'.repeat(Math.round(v.data.rating))}</span>
+              )}
+            </div>
+            <div class="mt-1 text-sm text-[var(--color-muted)]">
+              {v.data.creator}
+              {v.data.finishedDate && ` · ${v.data.finishedDate.getFullYear()} 年看`}
+            </div>
+            {v.body && <p class="mt-2 text-sm text-[var(--color-muted)] leading-relaxed">{excerpt(v.body)}…</p>}
+          </a>
         </li>
       ))
     }
