@@ -21,6 +21,9 @@ const minutes = readingMinutes(post.body ?? '');
 ---
 
 <BaseLayout title={post.data.title} description={post.data.summary}>
+  <!-- 阅读进度条 -->
+  <div id="reading-progress" class="fixed top-0 left-0 h-0.5 bg-[var(--color-accent)] z-50 transition-[width] duration-100" style="width: 0%"></div>
+
   <article>
     <header class="mb-10">
       <h1 class="text-3xl md:text-4xl font-bold leading-tight">{post.data.title}</h1>
@@ -57,3 +60,16 @@ const minutes = readingMinutes(post.body ?? '');
     </nav>
   </article>
 </BaseLayout>
+
+<script>
+  // 阅读进度条
+  const progressBar = document.getElementById('reading-progress');
+  if (progressBar) {
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      progressBar.style.width = progress + '%';
+    });
+  }
+</script>

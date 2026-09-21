@@ -64,5 +64,33 @@ const canonicalURL = new URL(Astro.url.pathname, SITE.url);
       <slot />
     </main>
     <Footer />
+
+    <!-- 回到顶部按钮 -->
+    <button
+      id="back-to-top"
+      aria-label="回到顶部"
+      class="fixed bottom-6 right-6 w-10 h-10 rounded-full bg-[var(--color-accent)] text-white shadow-lg opacity-0 invisible transition-all duration-300 hover:opacity-90 z-40"
+    >
+      <svg class="w-5 h-5 mx-auto" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+      </svg>
+    </button>
   </body>
 </html>
+
+<script>
+  // 回到顶部按钮
+  const backToTop = document.getElementById('back-to-top');
+  if (backToTop) {
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 300) {
+        backToTop.classList.remove('opacity-0', 'invisible');
+      } else {
+        backToTop.classList.add('opacity-0', 'invisible');
+      }
+    });
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+</script>
