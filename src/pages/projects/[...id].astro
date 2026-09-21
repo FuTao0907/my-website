@@ -24,26 +24,34 @@ const related = allProjects
 
 <BaseLayout title={project.data.title} description={project.data.description}>
   <article>
-    <header class="mb-8">
-      <div class="flex items-center gap-3 text-sm text-[var(--color-muted)]">
-        <span class="px-2 py-0.5 rounded-full border border-[var(--color-border)]">
+    <header class="mb-12 pb-8 border-b border-[var(--color-border)]">
+      <div class="flex flex-wrap items-center gap-3 text-sm">
+        <span class="px-3 py-1 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)] font-medium">
           {projectStatusLabel[project.data.status]}
         </span>
-        <span>开始于 {formatDate(project.data.startDate)}</span>
-        {project.data.endDate && <span>· 完成于 {formatDate(project.data.endDate)}</span>}
+        <span class="text-[var(--color-muted)] flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+          </svg>
+          {formatDate(project.data.startDate)}
+          {project.data.endDate && ` - ${formatDate(project.data.endDate)}`}
+        </span>
       </div>
-      <h1 class="mt-3 text-3xl md:text-4xl font-bold">{project.data.title}</h1>
-      <p class="mt-3 text-lg text-[var(--color-muted)]">{project.data.description}</p>
+      <h1 class="mt-6 text-3xl md:text-4xl font-bold tracking-tight">{project.data.title}</h1>
+      <p class="mt-4 text-lg text-[var(--color-muted)] leading-relaxed">{project.data.description}</p>
 
-      <div class="mt-5 flex flex-wrap gap-3">
+      <div class="mt-8 flex flex-wrap gap-3">
         {project.data.demo && (
           <a
             href={project.data.demo}
             target="_blank"
             rel="noopener"
-            class="px-4 py-2 rounded-md bg-[var(--color-accent)] text-white text-sm hover:opacity-90"
+            class="px-5 py-2.5 rounded-md bg-[var(--color-accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity flex items-center gap-2"
           >
-            在线演示 ↗
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+            </svg>
+            在线演示
           </a>
         )}
         {project.data.repo && (
@@ -51,9 +59,12 @@ const related = allProjects
             href={project.data.repo}
             target="_blank"
             rel="noopener"
-            class="px-4 py-2 rounded-md border border-[var(--color-border)] text-sm hover:bg-[var(--color-border)]"
+            class="px-5 py-2.5 rounded-md border border-[var(--color-border)] text-sm font-medium hover:bg-[var(--color-border)] transition-colors flex items-center gap-2"
           >
-            源码 ↗
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.423.366.823 1.096.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            源码
           </a>
         )}
       </div>
@@ -63,38 +74,38 @@ const related = allProjects
       <img
         src={project.data.cover}
         alt={project.data.title}
-        class="w-full rounded-lg border border-[var(--color-border)]"
+        class="w-full rounded-xl border border-[var(--color-border)] shadow-sm"
       />
     ) : (
       <ProjectCover seed={project.id} title={project.data.title} ratio="21/9" />
     )}
 
-    <div class="mt-10 leading-relaxed prose-content">
+    <div class="mt-12 leading-[1.8] text-[17px] prose-content">
       <Content />
     </div>
 
     {project.data.tech.length > 0 && (
-      <footer class="mt-12 pt-8 border-t border-[var(--color-border)]">
-        <h2 class="text-sm font-medium text-[var(--color-muted)]">技术栈</h2>
-        <div class="mt-2 flex flex-wrap gap-2">
+      <footer class="mt-16 pt-8 border-t border-[var(--color-border)]">
+        <p class="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider mb-4">技术栈</p>
+        <div class="flex flex-wrap gap-2">
           {project.data.tech.map((t) => (
-            <span class="px-3 py-1 rounded-full border border-[var(--color-border)] text-sm">{t}</span>
+            <span class="px-3 py-1.5 rounded-lg bg-[var(--color-border)] text-sm">{t}</span>
           ))}
         </div>
       </footer>
     )}
 
     {related.length > 0 && (
-      <section class="mt-12 pt-8 border-t border-[var(--color-border)]">
-        <h2 class="text-sm font-medium text-[var(--color-muted)]">相关项目</h2>
-        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section class="mt-16 pt-8 border-t border-[var(--color-border)]">
+        <p class="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider mb-6">相关项目</p>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {related.map((p) => (
             <a
               href={`/projects/${p.id}`}
-              class="block p-4 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors"
+              class="group block p-5 rounded-xl border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors"
             >
-              <h3 class="font-medium">{p.data.title}</h3>
-              <p class="mt-1 text-sm text-[var(--color-muted)] line-clamp-2">{p.data.description}</p>
+              <h3 class="font-medium group-hover:text-[var(--color-accent)] transition-colors">{p.data.title}</h3>
+              <p class="mt-2 text-sm text-[var(--color-muted)] line-clamp-2 leading-relaxed">{p.data.description}</p>
             </a>
           ))}
         </div>

@@ -15,11 +15,11 @@ export const SITE = {
   locale: 'zh-CN',
   nav: [
     { text: '首页', href: '/' },
-    { text: '关于', href: '/about' },
     { text: '项目', href: '/projects' },
     { text: '博客', href: '/blog' },
     { text: '收藏', href: '/collections' },
     { text: '现在', href: '/now' },
+    { text: '关于', href: '/about' },
   ],
   social: {
     github: 'https://github.com/FuTao0907',
