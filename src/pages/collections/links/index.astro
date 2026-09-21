@@ -1,0 +1,30 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+type Item = CollectionEntry<'links'>;
+const all = (await getCollection('links')) as Item[];
+const items = all.filter((l) => !import.meta.env.PROD || !l.data.draft);
+const excerpt = (body: string) => body.replace(/[#>*`]/g, '').trim().slice(0, 140);
+---
+
+<BaseLayout title="收藏链接" description="值得反复看的站点与链接">
+  <h1 class="text-3xl font-bold">收藏链接</h1>
+  <ul class="mt-8 space-y-4">
+    {
+      items.map((l) => (
+        <li class="p-5 rounded-lg border border-[var(--color-border)]">
+          <a href={l.data.link} target="_blank" rel="noopener" class="group block">
+            <div class="flex items-baseline justify-between gap-4">
+              <h2 class="font-semibold group-hover:text-[var(--color-accent)]">{l.data.title}</h2>
+              <span class="text-sm text-[var(--color-muted)]">{l.data.site}</span>
+            </div>
+            {l.body && (
+              <p class="mt-2 text-sm text-[var(--color-muted)] leading-relaxed">{excerpt(l.body)}…</p>
+            )}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

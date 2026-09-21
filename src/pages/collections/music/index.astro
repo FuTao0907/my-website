@@ -1,0 +1,33 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+type Item = CollectionEntry<'music'>;
+const all = (await getCollection('music')) as Item[];
+const items = all.filter((m) => !import.meta.env.PROD || !m.data.draft);
+const excerpt = (body: string) => body.replace(/[#>*`]/g, '').trim().slice(0, 140);
+---
+
+<BaseLayout title="音乐" description="Ange 喜欢的音乐">
+  <h1 class="text-3xl font-bold">音乐</h1>
+  <ul class="mt-8 space-y-4">
+    {
+      items.map((m) => (
+        <li class="p-5 rounded-lg border border-[var(--color-border)]">
+          <div class="flex items-baseline justify-between gap-4">
+            <h2 class="font-semibold">{m.data.title}</h2>
+            {m.data.rating && (
+              <span class="text-[var(--color-accent)]">{'★'.repeat(Math.round(m.data.rating))}</span>
+            )}
+          </div>
+          <div class="mt-1 text-sm text-[var(--color-muted)]">
+            {m.data.artist}
+            {m.data.album && ` · ${m.data.album}`}
+            {m.data.genre && ` · ${m.data.genre}`}
+          </div>
+          {m.body && <p class="mt-2 text-sm text-[var(--color-muted)] leading-relaxed">{excerpt(m.body)}…</p>}
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

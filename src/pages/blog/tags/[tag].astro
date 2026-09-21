@@ -1,0 +1,40 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPublishedPosts, formatDate } from '@/utils/posts';
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  const tagSet = new Set<string>();
+  posts.forEach((p) => p.data.tags.forEach((t) => tagSet.add(t)));
+  return [...tagSet].map((tag) => ({
+    params: { tag },
+    props: {
+      tag,
+      posts: posts.filter((p) => p.data.tags.includes(tag)),
+    },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout title={`#${tag}`} description={`标签 ${tag} 下的所有文章`}>
+  <h1 class="text-3xl font-bold">
+    <span class="text-[var(--color-accent)]">#</span>{tag}
+  </h1>
+  <p class="mt-2 text-[var(--color-muted)]">{posts.length} 篇文章</p>
+
+  <ul class="mt-10 space-y-6">
+    {posts.map((post) => (
+      <li>
+        <a href={`/blog/${post.id}`} class="group block">
+          <div class="text-sm text-[var(--color-muted)]">{formatDate(post.data.published)}</div>
+          <h2 class="mt-1 text-lg font-semibold group-hover:text-[var(--color-accent)] transition-colors">
+            {post.data.title}
+          </h2>
+          {post.data.summary && <p class="text-[var(--color-muted)]">{post.data.summary}</p>}
+        </a>
+      </li>
+    ))}
+  </ul>
+</BaseLayout>

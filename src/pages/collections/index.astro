@@ -1,0 +1,31 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+const cats = [
+  { path: '/collections/books', label: '书单', icon: '📚' },
+  { path: '/collections/music', label: '音乐', icon: '🎵' },
+  { path: '/collections/novels', label: '网文', icon: '📖' },
+  { path: '/collections/videos', label: '影视 / 视频', icon: '🎬' },
+  { path: '/collections/links', label: '收藏链接', icon: '🔗' },
+];
+---
+
+<BaseLayout title="收藏" description="Ange 喜欢但怕忘的东西：书、音乐、网文、影视">
+  <h1 class="text-3xl font-bold">收藏</h1>
+  <p class="mt-2 text-[var(--color-muted)]">
+    我喜欢但怕忘的东西，每条都写了我的评分和短评。
+  </p>
+
+  <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      cats.map((c) => (
+        <a
+          href={c.path}
+          class="block p-6 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors"
+        >
+          <div class="text-3xl">{c.icon}</div>
+          <div class="mt-3 font-semibold">{c.label}</div>
+        </a>
+      ))
+    }
+  </div>
+</BaseLayout>

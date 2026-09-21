@@ -1,0 +1,15 @@
+---
+import { SITE } from '@/config';
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-[var(--color-border)] mt-10">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[var(--color-muted)]">
+    <div>© {year} {SITE.author} · 用 Astro 构建，部署在 Cloudflare</div>
+    <div class="flex items-center gap-4">
+      <a href={SITE.social.github} class="hover:text-[var(--color-accent)] transition-colors">GitHub</a>
+      <a href={SITE.social.email} class="hover:text-[var(--color-accent)] transition-colors">Email</a>
+      <a href="/rss.xml" class="hover:text-[var(--color-accent)] transition-colors">RSS</a>
+    </div>
+  </div>
+</footer>

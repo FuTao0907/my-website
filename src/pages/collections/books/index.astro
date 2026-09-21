@@ -1,0 +1,46 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+type Book = CollectionEntry<'books'>;
+const all = (await getCollection('books')) as Book[];
+const items = all.filter((b) => !import.meta.env.PROD || !b.data.draft);
+const sort = Astro.url.searchParams.get('sort') ?? 'recent';
+const sorted =
+  sort === 'rating'
+    ? [...items].sort((a, b) => (b.data.rating ?? 0) - (a.data.rating ?? 0))
+    : [...items].sort(
+        (a, b) => (b.data.finishedDate?.valueOf() ?? 0) - (a.data.finishedDate?.valueOf() ?? 0),
+      );
+const excerpt = (body: string) => body.replace(/[#>*`]/g, '').trim().slice(0, 140);
+---
+
+<BaseLayout title="书单" description="Ange 读过的书与评分">
+  <div class="flex items-baseline justify-between">
+    <h1 class="text-3xl font-bold">书单</h1>
+    <div class="flex gap-2 text-sm">
+      <a href="/collections/books" class={sort === 'recent' ? 'text-[var(--color-accent)]' : ''}>最近</a>
+      <a href="/collections/books?sort=rating" class={sort === 'rating' ? 'text-[var(--color-accent)]' : ''}>评分</a>
+    </div>
+  </div>
+
+  <ul class="mt-8 space-y-4">
+    {
+      sorted.map((b) => (
+        <li class="p-5 rounded-lg border border-[var(--color-border)]">
+          <div class="flex items-baseline justify-between gap-4">
+            <h2 class="font-semibold">{b.data.title}</h2>
+            {b.data.rating && (
+              <span class="text-[var(--color-accent)]">{'★'.repeat(Math.round(b.data.rating))}</span>
+            )}
+          </div>
+          <div class="mt-1 text-sm text-[var(--color-muted)]">
+            {b.data.author}
+            {b.data.finishedDate && ` · ${b.data.finishedDate.getFullYear()} 年读完`}
+          </div>
+          {b.body && <p class="mt-2 text-sm text-[var(--color-muted)] leading-relaxed">{excerpt(b.body)}…</p>}
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

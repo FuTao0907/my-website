@@ -1,0 +1,175 @@
+---
+import { SITE } from '@/config';
+const path = Astro.url.pathname;
+---
+
+<header class="w-full border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-bg)]/80 backdrop-blur z-40">
+  <nav class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <a href="/" class="font-bold text-lg tracking-tight hover:text-[var(--color-accent)] transition-colors">
+      Ange<span class="text-[var(--color-muted)]">.dev</span>
+    </a>
+
+    <!-- 桌面端导航 -->
+    <ul class="hidden md:flex items-center gap-6 text-sm">
+      {
+        SITE.nav.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class:list={[
+                'transition-colors hover:text-[var(--color-accent)]',
+                path === item.href ? 'text-[var(--color-accent)] font-medium' : 'text-[var(--color-fg)]',
+              ]}
+            >
+              {item.text}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="flex items-center gap-1">
+      <!-- 暗色切换 -->
+      <button
+        id="theme-toggle"
+        aria-label="切换暗色模式"
+        class="p-2 rounded-md hover:bg-[var(--color-border)] transition-colors"
+      >
+        <svg class="w-5 h-5 dark:hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+        </svg>
+        <svg class="w-5 h-5 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3.75 11.25C3.75 16.222 7.778 20.25 12.75 20.25a9.753 9.753 0 0 0 9.002-5.248Z" />
+        </svg>
+      </button>
+
+      <a href="/search" aria-label="搜索" class="p-2 rounded-md hover:bg-[var(--color-border)] transition-colors">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+        </svg>
+      </a>
+
+      <!-- 移动端汉堡菜单 -->
+      <button
+        id="mobile-menu-btn"
+        aria-label="打开菜单"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        class="md:hidden p-2 rounded-md hover:bg-[var(--color-border)] transition-colors"
+      >
+        <svg id="icon-open" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+        <svg id="icon-close" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 移动端下拉菜单：绝对定位浮在内容上方，不占文档流 -->
+  <div id="mobile-menu" class="md:hidden hidden absolute left-0 right-0 top-full border-t border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-bg)_92%,transparent)] backdrop-blur-md shadow-lg">
+    <ul class="px-4 sm:px-6 py-4 space-y-3 text-sm">
+      {
+        SITE.nav.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class:list={[
+                'block py-1 transition-colors hover:text-[var(--color-accent)]',
+                path === item.href ? 'text-[var(--color-accent)] font-medium' : 'text-[var(--color-fg)]',
+              ]}
+            >
+              {item.text}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</header>
+
+<script>
+  // 暗色切换
+  const toggle = document.getElementById('theme-toggle');
+  toggle?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget as HTMLElement;
+    const rect = btn.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const radius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y),
+    );
+    const isDark = document.documentElement.classList.contains('dark');
+    const apply = () => {
+      document.documentElement.classList.toggle('dark');
+      localStorage.theme = isDark ? 'light' : 'dark';
+    };
+
+    if (!document.startViewTransition) {
+      apply();
+      return;
+    }
+
+    const transition = document.startViewTransition(apply);
+    await transition.ready;
+    document.documentElement.animate(
+      {
+        clipPath: [
+          `circle(0px at ${x}px ${y}px)`,
+          `circle(${radius}px at ${x}px ${y}px)`,
+        ],
+      },
+      {
+        duration: 500,
+        easing: 'ease-in-out',
+        pseudoElement: '::view-transition-new(root)',
+      },
+    );
+  });
+
+  // 移动端菜单
+  const menuBtn = document.getElementById('mobile-menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  const iconOpen = document.getElementById('icon-open');
+  const iconClose = document.getElementById('icon-close');
+
+  function closeMenu() {
+    menu?.classList.add('hidden');
+    iconOpen?.classList.remove('hidden');
+    iconClose?.classList.add('hidden');
+    menuBtn?.setAttribute('aria-expanded', 'false');
+    menuBtn?.setAttribute('aria-label', '打开菜单');
+  }
+
+  menuBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = !menu?.classList.contains('hidden');
+    if (isOpen) {
+      closeMenu();
+    } else {
+      menu?.classList.remove('hidden');
+      iconOpen?.classList.add('hidden');
+      iconClose?.classList.remove('hidden');
+      menuBtn.setAttribute('aria-expanded', 'true');
+      menuBtn.setAttribute('aria-label', '关闭菜单');
+    }
+  });
+
+  // 点击菜单外部时关闭
+  document.addEventListener('click', (e) => {
+    if (!menu || menu.classList.contains('hidden')) return;
+    const target = e.target as Node;
+    if (!menu.contains(target) && !menuBtn?.contains(target)) {
+      closeMenu();
+    }
+  });
+
+  // 窗口 resize 到桌面端时重置菜单状态
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 768) {
+      closeMenu();
+    }
+  });
+</script>

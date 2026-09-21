@@ -1,0 +1,31 @@
+{
+  "name": "anges-website",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Ange's website — 数字名片 + 项目陈列室 + 内容自留地",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build && pagefind --site dist",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/react": "^6.0.6",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.4",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.3.3",
+    "react": "18",
+    "react-dom": "18",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@types/react": "18",
+    "@types/react-dom": "18",
+    "pagefind": "^1.5.2",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.135.0"
+  }
+}

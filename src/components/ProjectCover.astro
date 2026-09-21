@@ -1,0 +1,60 @@
+---
+/**
+ * 随机几何封面占位
+ * 基于 slug 哈希出 deterministic 的形状 + accent 色，刷新不变
+ */
+interface Props {
+  seed: string;
+  title: string;
+  ratio?: string;
+}
+const { seed, title, ratio = '16/9' } = Astro.props;
+
+// 简单字符串哈希
+let hash = 0;
+for (let i = 0; i < seed.length; i++) {
+  hash = (hash << 5) - hash + seed.charCodeAt(i);
+  hash |= 0;
+}
+const h = Math.abs(hash);
+const shape = h % 3; // 0 圆, 1 三角, 2 方块
+const hue = (h % 360 + 220) % 360; // 偏冷色
+const opacity = 0.15 + (h % 10) / 40;
+---
+
+<div
+  class="relative w-full overflow-hidden rounded-lg bg-[var(--color-card)] border border-[var(--color-border)]"
+  style={`aspect-ratio: ${ratio}`}
+>
+  <svg
+    class="absolute inset-0 w-full h-full"
+    viewBox="0 0 400 225"
+    preserveAspectRatio="xMidYMid slice"
+  >
+    {
+      shape === 0 && (
+        <circle cx="200" cy="112" r="70" fill={`hsla(${hue}, 70%, 55%, ${opacity})`} />
+      )
+    }
+    {
+      shape === 1 && (
+        <polygon points="200,50 280,180 120,180" fill={`hsla(${hue}, 70%, 55%, ${opacity})`} />
+      )
+    }
+    {
+      shape === 2 && (
+        <rect
+          x="130"
+          y="55"
+          width="140"
+          height="115"
+          rx="12"
+          fill={`hsla(${hue}, 70%, 55%, ${opacity})`}
+        />
+      )
+    }
+  </svg>
+  <div class="absolute bottom-3 left-4 text-sm font-medium text-[var(--color-muted)]">
+    {title}
+  </div>
+</div>

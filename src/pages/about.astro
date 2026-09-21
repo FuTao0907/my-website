@@ -1,0 +1,66 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { about as data } from '@/content/about';
+---
+
+<BaseLayout title="关于我" description={`${data.name} · ${data.role}`}>
+  <section class="py-8">
+    <h1 class="text-4xl font-bold">{data.name}</h1>
+    <p class="mt-2 text-lg text-[var(--color-muted)]">
+      {data.role} · {data.location}
+    </p>
+    <p class="mt-6 text-lg leading-relaxed">{data.tagline}</p>
+  </section>
+
+  <section class="py-8 border-t border-[var(--color-border)]">
+    <h2 class="text-2xl font-semibold">技能</h2>
+    <div class="mt-6 space-y-6">
+      {
+        data.skills.map((group) => (
+          <div>
+            <h3 class="text-sm font-medium text-[var(--color-muted)]">{group.group}</h3>
+            <div class="mt-2 flex flex-wrap gap-2">
+              {group.items.map((s) => (
+                <span class="px-3 py-1 rounded-full border border-[var(--color-border)] text-sm">
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="py-8 border-t border-[var(--color-border)]">
+    <h2 class="text-2xl font-semibold">经历</h2>
+    <div class="mt-6 space-y-8">
+      {
+        data.experience.map((job) => (
+          <div>
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 class="text-lg font-semibold">
+                {job.company} · {job.title}
+              </h3>
+              <span class="text-sm text-[var(--color-muted)]">{job.period}</span>
+            </div>
+            <p class="mt-1 text-[var(--color-muted)]">{job.summary}</p>
+            <ul class="mt-2 list-disc list-inside text-sm space-y-1">
+              {job.highlights.map((h) => (
+                <li>{h}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="py-8 border-t border-[var(--color-border)]">
+    <h2 class="text-2xl font-semibold">联系我</h2>
+    <div class="mt-4 flex gap-4">
+      <a href={data.social.github} class="text-[var(--color-accent)] hover:underline">GitHub</a>
+      <a href={data.social.email} class="text-[var(--color-accent)] hover:underline">Email</a>
+    </div>
+  </section>
+</BaseLayout>

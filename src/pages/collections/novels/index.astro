@@ -1,0 +1,33 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+type Item = CollectionEntry<'novels'>;
+const all = (await getCollection('novels')) as Item[];
+const items = all.filter((n) => !import.meta.env.PROD || !n.data.draft);
+const excerpt = (body: string) => body.replace(/[#>*`]/g, '').trim().slice(0, 140);
+---
+
+<BaseLayout title="网文" description="Ange 在追的网文">
+  <h1 class="text-3xl font-bold">网文</h1>
+  <ul class="mt-8 space-y-4">
+    {
+      items.map((n) => (
+        <li class="p-5 rounded-lg border border-[var(--color-border)]">
+          <div class="flex items-baseline justify-between gap-4">
+            <h2 class="font-semibold">{n.data.title}</h2>
+            {n.data.rating && (
+              <span class="text-[var(--color-accent)]">{'★'.repeat(Math.round(n.data.rating))}</span>
+            )}
+          </div>
+          <div class="mt-1 text-sm text-[var(--color-muted)]">
+            {n.data.author}
+            {n.data.platform && ` · ${n.data.platform}`}
+            {n.data.progress && ` · ${n.data.progress}`}
+          </div>
+          {n.body && <p class="mt-2 text-sm text-[var(--color-muted)] leading-relaxed">{excerpt(n.body)}…</p>}
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

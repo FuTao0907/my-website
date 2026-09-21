@@ -1,0 +1,32 @@
+name: "Ange"
+role: "前端开发工程师"
+tagline: "喜欢折腾小项目、记录技术与生活的前端开发者"
+location: "中国"
+avatar: "/avatar.png"
+
+skills:
+  - group: "熟练"
+    items: ["HTML/CSS", "TypeScript", "JavaScript", "React", "Vue"]
+  - group: "熟悉"
+    items: ["Astro", "Tailwind CSS", "Node.js", "Git", "Cloudflare"]
+  - group: "在学"
+    items: ["性能优化", "边缘计算", "设计系统"]
+
+experience:
+  - company: "公司 A"
+    title: "前端开发"
+    period: "2023.06 - 至今"
+    summary: "负责业务前端开发与组件库建设"
+    highlights:
+      - "搭建组件库，覆盖多个业务线"
+      - "优化首屏加载，LCP 显著下降"
+  - company: "公司 B"
+    title: "前端开发实习生"
+    period: "2022.03 - 2023.05"
+    summary: "参与活动页与内部工具开发"
+    highlights:
+      - "独立完成多个活动页"
+
+social:
+  github: "https://github.com/"
+  email: "mailto:you@example.com"

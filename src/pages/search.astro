@@ -1,0 +1,64 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="搜索" description="全站搜索">
+  <h1 class="text-3xl font-bold">搜索</h1>
+  <input
+    id="search-input"
+    type="search"
+    aria-label="搜索全站内容"
+    placeholder="输入关键词..."
+    class="mt-6 w-full px-4 py-3 rounded-lg border border-[var(--color-border)] bg-transparent focus:outline-none focus:border-[var(--color-accent)]"
+  />
+  <div id="search-results" class="mt-6 space-y-4"></div>
+  <p id="search-status" aria-live="polite" class="mt-4 text-sm text-[var(--color-muted)]"></p>
+</BaseLayout>
+
+<script is:inline>
+  async function initSearch() {
+    var input = document.getElementById('search-input');
+    var results = document.getElementById('search-results');
+    var status = document.getElementById('search-status');
+    if (!input || !results) return;
+
+    // 浏览器原生 ESM 动态 import，不经过 Vite 打包
+    var pagefind = await import('/pagefind/pagefind.js');
+    await pagefind.init();
+
+    var timer;
+    input.addEventListener('input', function () {
+      clearTimeout(timer);
+      timer = setTimeout(async function () {
+        var q = input.value.trim();
+        if (!q) {
+          results.innerHTML = '';
+          status.textContent = '';
+          return;
+        }
+        status.textContent = '搜索中...';
+        try {
+          var res = await pagefind.search(q);
+          status.textContent = '找到 ' + res.results.length + ' 个结果';
+          results.innerHTML = '';
+          var slice = res.results.slice(0, 10);
+          for (var i = 0; i < slice.length; i++) {
+            var data = await slice[i].data();
+            var a = document.createElement('a');
+            a.href = data.url;
+            a.className =
+              'block p-4 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)]';
+            var title = document.createElement('div');
+            title.className = 'font-medium';
+            title.textContent = (data.meta && data.meta.title) || '无标题';
+            a.appendChild(title);
+            results.appendChild(a);
+          }
+        } catch (e) {
+          status.textContent = '搜索出错：' + String(e);
+        }
+      }, 300);
+    });
+  }
+  initSearch();
+</script>

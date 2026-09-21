@@ -1,0 +1,25 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPublishedPosts } from '@/utils/posts';
+
+const posts = await getPublishedPosts();
+const tagSet = new Map<string, number>();
+posts.forEach((p) => p.data.tags.forEach((t) => tagSet.set(t, (tagSet.get(t) ?? 0) + 1)));
+const tags = [...tagSet.entries()].sort((a, b) => b[1] - a[1]);
+---
+
+<BaseLayout title="标签" description="所有文章标签">
+  <h1 class="text-3xl font-bold">标签</h1>
+  <ul class="mt-8 flex flex-wrap gap-3">
+    {tags.map(([tag, count]) => (
+      <li>
+        <a
+          href={`/blog/tags/${tag}`}
+          class="inline-block px-3 py-1.5 rounded-full border border-[var(--color-border)] text-sm hover:bg-[var(--color-border)] transition-colors"
+        >
+          {tag} <span class="text-[var(--color-muted)]">×{count}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</BaseLayout>

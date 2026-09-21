@@ -1,0 +1,113 @@
+@import 'tailwindcss';
+
+/* 暗色模式用 class 策略：<html class="dark"> 时生效 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ===== 设计 Token（PRD v1.0 §6.2 极简单色） ===== */
+@theme {
+  /* 浅色 */
+  --color-bg: #ffffff;
+  --color-fg: #1a1a1a;
+  --color-muted: #6b7280;
+  --color-accent: #2563eb;
+  --color-border: #e5e7eb;
+  --color-card: #ffffff;
+
+  /* 字体 */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+  /* 字号阶梯 */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+  --text-4xl: 3rem;
+}
+
+/* 暗色变量覆盖 */
+.dark {
+  --color-bg: #0f0f0f;
+  --color-fg: #e5e5e5;
+  --color-muted: #9ca3af;
+  --color-accent: #60a5fa;
+  --color-border: #2a2a2a;
+  --color-card: #161616;
+}
+
+/* ===== 全局基础 ===== */
+html {
+  scroll-behavior: smooth;
+  /* 强制始终显示垂直滚动条，避免页面切换时因滚动条出现/消失导致内容左右偏移 */
+  overflow-y: scroll;
+}
+
+/* 尊重用户减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 正文阅读宽度限制 */
+.prose,
+article {
+  max-width: 70ch;
+}
+
+/* ===== 自定义滚动条 ===== */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+/* 暗色切换圆形扩散：禁用默认过渡，交给 JS 控制 clip-path */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}

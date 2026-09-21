@@ -1,0 +1,67 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPublishedPosts, formatDate } from '@/utils/posts';
+
+const posts = await getPublishedPosts();
+const categories = ['tech', 'life'] as const;
+const activeCat = Astro.url.searchParams.get('cat') ?? 'all';
+const filtered =
+  activeCat === 'all' ? posts : posts.filter((p) => p.data.category === activeCat);
+---
+
+<BaseLayout title="博客" description="Ange 的技术笔记与生活记录">
+  <h1 class="text-3xl font-bold">博客</h1>
+  <p class="mt-2 text-[var(--color-muted)]">共 {posts.length} 篇。</p>
+
+  <nav class="mt-6 flex gap-2 text-sm">
+    <a
+      href="/blog"
+      class:list={[
+        'px-3 py-1.5 rounded-full transition-colors',
+        activeCat === 'all'
+          ? 'bg-[var(--color-accent)] text-white'
+          : 'border border-[var(--color-border)] hover:bg-[var(--color-border)]',
+      ]}
+    >
+      全部
+    </a>
+    {categories.map((cat) => (
+      <a
+        href={`/blog?cat=${cat}`}
+        class:list={[
+          'px-3 py-1.5 rounded-full transition-colors',
+          activeCat === cat
+            ? 'bg-[var(--color-accent)] text-white'
+            : 'border border-[var(--color-border)] hover:bg-[var(--color-border)]',
+        ]}
+      >
+        {cat === 'tech' ? '技术' : '生活'}
+      </a>
+    ))}
+  </nav>
+
+  <ul class="mt-10 space-y-8">
+    {
+      filtered.map((post) => (
+        <li class="group">
+          <a href={`/blog/${post.id}`} class="block">
+            <div class="flex items-baseline gap-3 text-sm text-[var(--color-muted)]">
+              <time>{formatDate(post.data.published)}</time>
+              <span>· {post.data.tags.join(' / ')}</span>
+            </div>
+            <h2 class="mt-1 text-xl font-semibold group-hover:text-[var(--color-accent)] transition-colors">
+              {post.data.title}
+            </h2>
+            {post.data.summary && (
+              <p class="mt-1 text-[var(--color-muted)]">{post.data.summary}</p>
+            )}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  {filtered.length === 0 && (
+    <p class="mt-10 text-[var(--color-muted)]">还没有文章，等我写完。</p>
+  )}
+</BaseLayout>
