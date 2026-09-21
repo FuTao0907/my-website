@@ -4,6 +4,7 @@ import { getPublishedPosts, formatDate } from '@/utils/posts';
 import { getProjects, projectStatusLabel } from '@/utils/projects';
 import { getCollection } from 'astro:content';
 import { SITE } from '@/config';
+import { about } from '@/content/about';
 
 const posts = await getPublishedPosts();
 const recentPosts = posts.slice(0, 3);
@@ -35,30 +36,42 @@ const allCollections = [
 ---
 
 <BaseLayout>
+  <!-- Hero -->
   <section class="py-16 md:py-24">
-    <h1 class="text-4xl md:text-5xl font-bold tracking-tight leading-tight">
-      你好，我是 <span class="text-[var(--color-accent)]">Ange</span>。
-    </h1>
-    <p class="mt-6 text-lg text-[var(--color-muted)] max-w-2xl leading-relaxed">
-      前端工程师。这里是我的数字名片、项目陈列室与内容自留地——
-      记录灵感项目、沉淀技术笔记、收藏喜欢的音乐和书。
-    </p>
-    <div class="mt-10 flex flex-wrap gap-4">
-      <a
-        href="/projects"
-        class="px-5 py-2.5 rounded-md bg-[var(--color-accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
-      >
-        看看我的项目
-      </a>
-      <a
-        href="/about"
-        class="px-5 py-2.5 rounded-md border border-[var(--color-border)] text-sm font-medium hover:bg-[var(--color-border)] transition-colors"
-      >
-        了解更多
-      </a>
+    <div class="flex flex-col md:flex-row gap-10 items-start">
+      <!-- 头像 -->
+      <img
+        src="/avatar.jpg"
+        alt="Ange"
+        class="w-28 h-28 rounded-full object-cover border-2 border-[var(--color-border)]"
+      />
+      <div class="flex-1">
+        <h1 class="text-4xl md:text-5xl font-bold tracking-tight leading-tight">
+          你好，我是 <span class="text-[var(--color-accent)]">Ange</span>。
+        </h1>
+        <p class="mt-6 text-lg text-[var(--color-muted)] max-w-2xl leading-relaxed">
+          前端工程师。这里是我的数字名片、项目陈列室与内容自留地——
+          记录灵感项目、沉淀技术笔记、收藏喜欢的音乐和书。
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a
+            href="/projects"
+            class="px-5 py-2.5 rounded-md bg-[var(--color-accent)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            看看我的项目
+          </a>
+          <a
+            href="/about"
+            class="px-5 py-2.5 rounded-md border border-[var(--color-border)] text-sm font-medium hover:bg-[var(--color-border)] transition-colors"
+          >
+            了解更多
+          </a>
+        </div>
+      </div>
     </div>
   </section>
 
+  <!-- 三列最近更新 -->
   <section class="py-10 border-t border-[var(--color-border)]">
     <div class="grid md:grid-cols-3 gap-8">
       <!-- 最近博客 -->
@@ -131,6 +144,33 @@ const allCollections = [
         </ul>
         {allCollections.length === 0 && <p class="mt-4 text-[var(--color-muted)] text-sm">还没有收藏。</p>}
       </div>
+    </div>
+  </section>
+
+  <!-- 联系方式 -->
+  <section class="py-10 border-t border-[var(--color-border)]">
+    <h2 class="text-xl font-semibold mb-6">联系我</h2>
+    <div class="flex flex-wrap gap-4">
+      <a
+        href={SITE.social.github}
+        target="_blank"
+        rel="noopener"
+        class="px-4 py-2 rounded-md border border-[var(--color-border)] text-sm hover:bg-[var(--color-border)] transition-colors"
+      >
+        GitHub
+      </a>
+      <a
+        href={SITE.social.email}
+        class="px-4 py-2 rounded-md border border-[var(--color-border)] text-sm hover:bg-[var(--color-border)] transition-colors"
+      >
+        Email
+      </a>
+      <a
+        href="/rss.xml"
+        class="px-4 py-2 rounded-md border border-[var(--color-border)] text-sm hover:bg-[var(--color-border)] transition-colors"
+      >
+        RSS
+      </a>
     </div>
   </section>
 </BaseLayout>

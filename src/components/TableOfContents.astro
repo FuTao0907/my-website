@@ -6,11 +6,6 @@ interface Props {
 }
 
 const { headings } = Astro.props;
-
-// 没有足够标题时不显示 TOC
-if (headings.length < 2) {
-  Astro.response.status = 200;
-}
 ---
 
 {headings.length >= 2 && (
@@ -22,9 +17,10 @@ if (headings.length < 2) {
           <li>
             <a
               href={`#${h.slug}`}
-              class={`block text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors leading-relaxed ${
+              class={`toc-link block text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors leading-relaxed ${
                 h.depth === 3 ? 'pl-4 text-xs' : ''
               }`}
+              data-slug={h.slug}
             >
               {h.text}
             </a>
@@ -34,3 +30,29 @@ if (headings.length < 2) {
     </nav>
   </aside>
 )}
+
+<script>
+  // TOC 高亮当前章节
+  const tocLinks = document.querySelectorAll('.toc-link');
+  if (tocLinks.length > 0) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const slug = entry.target.id;
+          const link = document.querySelector(`.toc-link[data-slug="${slug}"]`);
+          if (entry.isIntersecting) {
+            tocLinks.forEach((l) => l.classList.remove('text-[var(--color-accent)]', 'font-medium'));
+            link?.classList.add('text-[var(--color-accent)]', 'font-medium');
+          }
+        });
+      },
+      { rootMargin: '-20% 0px -80% 0px' }
+    );
+
+    tocLinks.forEach((link) => {
+      const slug = link.getAttribute('data-slug');
+      const heading = document.getElementById(slug ?? '');
+      if (heading) observer.observe(heading);
+    });
+  }
+</script>

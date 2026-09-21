@@ -1,0 +1,115 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPublishedPosts, formatDate } from '@/utils/posts';
+import { getProjects } from '@/utils/projects';
+import { getCollection } from 'astro:content';
+
+const posts = await getPublishedPosts();
+const projects = await getProjects();
+const books = (await getCollection('books')).filter((b) => !import.meta.env.PROD || !b.data.draft);
+const music = (await getCollection('music')).filter((m) => !import.meta.env.PROD || !m.data.draft);
+const novels = (await getCollection('novels')).filter((n) => !import.meta.env.PROD || !n.data.draft);
+const videos = (await getCollection('videos')).filter((v) => !import.meta.env.PROD || !v.data.draft);
+const links = (await getCollection('links')).filter((l) => !import.meta.env.PROD || !l.data.draft);
+---
+
+<BaseLayout title="站点地图" description="Ange 网站所有内容的索引">
+  <h1 class="text-3xl font-bold mb-8">站点地图</h1>
+
+  <div class="space-y-10">
+    <!-- 页面 -->
+    <section>
+      <h2 class="text-lg font-semibold mb-4 text-[var(--color-accent)]">页面</h2>
+      <ul class="space-y-2 text-[var(--color-fg)]">
+        <li><a href="/" class="hover:text-[var(--color-accent)]">首页</a></li>
+        <li><a href="/projects" class="hover:text-[var(--color-accent)]">项目</a></li>
+        <li><a href="/blog" class="hover:text-[var(--color-accent)]">博客</a></li>
+        <li><a href="/collections" class="hover:text-[var(--color-accent)]">收藏夹</a></li>
+        <li><a href="/about" class="hover:text-[var(--color-accent)]">关于我</a></li>
+        <li><a href="/search" class="hover:text-[var(--color-accent)]">搜索</a></li>
+      </ul>
+    </section>
+
+    <!-- 博客 -->
+    <section>
+      <h2 class="text-lg font-semibold mb-4 text-[var(--color-accent)]">博客 ({posts.length})</h2>
+      <ul class="space-y-2">
+        {posts.map((post) => (
+          <li class="flex items-baseline gap-3">
+            <a href={`/blog/${post.id}`} class="hover:text-[var(--color-accent)]">{post.data.title}</a>
+            <span class="text-sm text-[var(--color-muted)]">{formatDate(post.data.published)}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <!-- 项目 -->
+    <section>
+      <h2 class="text-lg font-semibold mb-4 text-[var(--color-accent)]">项目 ({projects.length})</h2>
+      <ul class="space-y-2">
+        {projects.map((project) => (
+          <li>
+            <a href={`/projects/${project.id}`} class="hover:text-[var(--color-accent)]">{project.data.title}</a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <!-- 收藏夹 -->
+    <section>
+      <h2 class="text-lg font-semibold mb-4 text-[var(--color-accent)]">收藏夹</h2>
+      <div class="grid gap-6 md:grid-cols-2">
+        <div>
+          <h3 class="font-medium mb-2">书单 ({books.length})</h3>
+          <ul class="space-y-1 text-sm">
+            {books.map((b) => (
+              <li>
+                <a href={`/collections/books/${b.id}`} class="text-[var(--color-muted)] hover:text-[var(--color-accent)]">{b.data.title}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-medium mb-2">音乐 ({music.length})</h3>
+          <ul class="space-y-1 text-sm">
+            {music.map((m) => (
+              <li>
+                <a href={`/collections/music/${m.id}`} class="text-[var(--color-muted)] hover:text-[var(--color-accent)]">{m.data.title}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-medium mb-2">网文 ({novels.length})</h3>
+          <ul class="space-y-1 text-sm">
+            {novels.map((n) => (
+              <li>
+                <a href={`/collections/novels/${n.id}`} class="text-[var(--color-muted)] hover:text-[var(--color-accent)]">{n.data.title}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-medium mb-2">影视/视频 ({videos.length})</h3>
+          <ul class="space-y-1 text-sm">
+            {videos.map((v) => (
+              <li>
+                <a href={`/collections/videos/${v.id}`} class="text-[var(--color-muted)] hover:text-[var(--color-accent)]">{v.data.title}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-medium mb-2">链接 ({links.length})</h3>
+          <ul class="space-y-1 text-sm">
+            {links.map((l) => (
+              <li>
+                <a href={`/collections/links/${l.id}`} class="text-[var(--color-muted)] hover:text-[var(--color-accent)]">{l.data.title}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
