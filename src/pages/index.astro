@@ -1,10 +1,37 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getPublishedPosts, formatDate } from '@/utils/posts';
+import { getProjects, projectStatusLabel } from '@/utils/projects';
+import { getCollection } from 'astro:content';
 import { SITE } from '@/config';
 
 const posts = await getPublishedPosts();
-const recent = posts.slice(0, 3);
+const recentPosts = posts.slice(0, 3);
+
+const projects = await getProjects();
+const recentProjects = projects.slice(0, 3);
+
+// 跨品类混合收藏流
+const books = await getCollection('books');
+const music = await getCollection('music');
+const novels = await getCollection('novels');
+const videos = await getCollection('videos');
+const links = await getCollection('links');
+
+const allCollections = [
+  ...books.map((item) => ({ ...item, category: 'books', categoryName: '书籍' })),
+  ...music.map((item) => ({ ...item, category: 'music', categoryName: '音乐' })),
+  ...novels.map((item) => ({ ...item, category: 'novels', categoryName: '网文' })),
+  ...videos.map((item) => ({ ...item, category: 'videos', categoryName: '视频' })),
+  ...links.map((item) => ({ ...item, category: 'links', categoryName: '链接' })),
+]
+  .filter((item) => !item.data.draft)
+  .sort((a, b) => {
+    const aDate = a.data.finishedDate ?? new Date(0);
+    const bDate = b.data.finishedDate ?? new Date(0);
+    return bDate.valueOf() - aDate.valueOf();
+  })
+  .slice(0, 5);
 ---
 
 <BaseLayout>
@@ -33,24 +60,77 @@ const recent = posts.slice(0, 3);
   </section>
 
   <section class="py-10 border-t border-[var(--color-border)]">
-    <div class="flex items-baseline justify-between">
-      <h2 class="text-xl font-semibold">最近博客</h2>
-      <a href="/blog" class="text-sm text-[var(--color-accent)] hover:underline">全部 →</a>
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- 最近博客 -->
+      <div>
+        <div class="flex items-baseline justify-between">
+          <h2 class="text-xl font-semibold">最近博客</h2>
+          <a href="/blog" class="text-sm text-[var(--color-accent)] hover:underline">全部 →</a>
+        </div>
+        <ul class="mt-6 space-y-5">
+          {
+            recentPosts.map((post) => (
+              <li>
+                <a href={`/blog/${post.id}`} class="group block">
+                  <div class="text-sm text-[var(--color-muted)]">{formatDate(post.data.published)}</div>
+                  <h3 class="mt-0.5 font-medium group-hover:text-[var(--color-accent)] transition-colors">
+                    {post.data.title}
+                  </h3>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        {recentPosts.length === 0 && <p class="mt-4 text-[var(--color-muted)] text-sm">还没有文章。</p>}
+      </div>
+
+      <!-- 最近项目 -->
+      <div>
+        <div class="flex items-baseline justify-between">
+          <h2 class="text-xl font-semibold">最近项目</h2>
+          <a href="/projects" class="text-sm text-[var(--color-accent)] hover:underline">全部 →</a>
+        </div>
+        <ul class="mt-6 space-y-5">
+          {
+            recentProjects.map((project) => (
+              <li>
+                <a href={`/projects/${project.id}`} class="group block">
+                  <div class="text-sm text-[var(--color-muted)]">
+                    {projectStatusLabel[project.data.status]}
+                  </div>
+                  <h3 class="mt-0.5 font-medium group-hover:text-[var(--color-accent)] transition-colors">
+                    {project.data.title}
+                  </h3>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        {recentProjects.length === 0 && <p class="mt-4 text-[var(--color-muted)] text-sm">还没有项目。</p>}
+      </div>
+
+      <!-- 最近收藏 -->
+      <div>
+        <div class="flex items-baseline justify-between">
+          <h2 class="text-xl font-semibold">最近收藏</h2>
+          <a href="/collections" class="text-sm text-[var(--color-accent)] hover:underline">全部 →</a>
+        </div>
+        <ul class="mt-6 space-y-5">
+          {
+            allCollections.map((item) => (
+              <li>
+                <a href={`/collections/${item.category}`} class="group block">
+                  <div class="text-sm text-[var(--color-muted)]">{item.categoryName}</div>
+                  <h3 class="mt-0.5 font-medium group-hover:text-[var(--color-accent)] transition-colors">
+                    {item.data.title}
+                  </h3>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        {allCollections.length === 0 && <p class="mt-4 text-[var(--color-muted)] text-sm">还没有收藏。</p>}
+      </div>
     </div>
-    <ul class="mt-6 space-y-5">
-      {
-        recent.map((post) => (
-          <li>
-            <a href={`/blog/${post.id}`} class="group block">
-              <div class="text-sm text-[var(--color-muted)]">{formatDate(post.data.published)}</div>
-              <h3 class="mt-0.5 font-medium group-hover:text-[var(--color-accent)] transition-colors">
-                {post.data.title}
-              </h3>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-    {recent.length === 0 && <p class="mt-4 text-[var(--color-muted)] text-sm">还没有文章。</p>}
   </section>
 </BaseLayout>
