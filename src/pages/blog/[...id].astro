@@ -78,4 +78,25 @@ const headings = extractHeadings(post.body ?? '');
       progressBar.style.width = progress + '%';
     });
   }
+
+  // 代码块一键复制
+  document.querySelectorAll('pre').forEach((pre) => {
+    const button = document.createElement('button');
+    button.className = 'code-copy-btn';
+    button.textContent = '复制';
+    button.setAttribute('aria-label', '复制代码');
+    button.addEventListener('click', async () => {
+      const code = pre.querySelector('code')?.textContent ?? '';
+      try {
+        await navigator.clipboard.writeText(code);
+        button.textContent = '已复制';
+        setTimeout(() => (button.textContent = '复制'), 2000);
+      } catch {
+        button.textContent = '失败';
+        setTimeout(() => (button.textContent = '复制'), 2000);
+      }
+    });
+    pre.style.position = 'relative';
+    pre.appendChild(button);
+  });
 </script>
