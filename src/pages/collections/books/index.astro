@@ -5,22 +5,42 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 type Book = CollectionEntry<'books'>;
 const all = (await getCollection('books')) as Book[];
 const items = all.filter((b) => !import.meta.env.PROD || !b.data.draft);
+
 const sort = Astro.url.searchParams.get('sort') ?? 'recent';
+const status = Astro.url.searchParams.get('status') ?? 'all';
+
+let filtered = items;
+if (status !== 'all') {
+  filtered = filtered.filter((item) => item.data.status === status);
+}
+
 const sorted =
   sort === 'rating'
-    ? [...items].sort((a, b) => (b.data.rating ?? 0) - (a.data.rating ?? 0))
-    : [...items].sort(
+    ? [...filtered].sort((a, b) => (b.data.rating ?? 0) - (a.data.rating ?? 0))
+    : [...filtered].sort(
         (a, b) => (b.data.finishedDate?.valueOf() ?? 0) - (a.data.finishedDate?.valueOf() ?? 0),
       );
 const excerpt = (body: string) => body.replace(/[#>*`]/g, '').trim().slice(0, 140);
 ---
 
 <BaseLayout title="书单" description="Ange 读过的书与评分">
-  <div class="flex items-baseline justify-between">
+  <div class="flex flex-wrap items-baseline justify-between gap-4">
     <h1 class="text-3xl font-bold">书单</h1>
-    <div class="flex gap-2 text-sm">
-      <a href="/collections/books" class={sort === 'recent' ? 'text-[var(--color-accent)]' : ''}>最近</a>
-      <a href="/collections/books?sort=rating" class={sort === 'rating' ? 'text-[var(--color-accent)]' : ''}>评分</a>
+    <div class="flex flex-wrap gap-4 text-sm">
+      <!-- 排序 -->
+      <div class="flex gap-2">
+        <span class="text-[var(--color-muted)]">排序：</span>
+        <a href="/collections/books" class={sort === 'recent' ? 'text-[var(--color-accent)]' : ''}>最近</a>
+        <a href="/collections/books?sort=rating" class={sort === 'rating' ? 'text-[var(--color-accent)]' : ''}>评分</a>
+      </div>
+      <!-- 状态筛选 -->
+      <div class="flex gap-2">
+        <span class="text-[var(--color-muted)]">状态：</span>
+        <a href="/collections/books" class={status === 'all' ? 'text-[var(--color-accent)]' : ''}>全部</a>
+        <a href="/collections/books?status=wishlist" class={status === 'wishlist' ? 'text-[var(--color-accent)]' : ''}>想看</a>
+        <a href="/collections/books?status=ongoing" class={status === 'ongoing' ? 'text-[var(--color-accent)]' : ''}>在读</a>
+        <a href="/collections/books?status=finished" class={status === 'finished' ? 'text-[var(--color-accent)]' : ''}>读过</a>
+      </div>
     </div>
   </div>
 
@@ -43,4 +63,5 @@ const excerpt = (body: string) => body.replace(/[#>*`]/g, '').trim().slice(0, 14
       ))
     }
   </ul>
+  {sorted.length === 0 && <p class="mt-8 text-[var(--color-muted)] text-sm">没有符合条件的内容。</p>}
 </BaseLayout>
