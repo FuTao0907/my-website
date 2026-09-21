@@ -39,6 +39,17 @@ const canonicalURL = new URL(Astro.url.pathname, SITE.url);
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={pageDescription} />
 
+    <!-- JSON-LD 结构化数据 -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Ange",
+      "url": SITE.url,
+      "jobTitle": "前端开发工程师",
+      "email": SITE.email,
+      "knowsAbout": ["Frontend Development", "React", "TypeScript", "Astro"],
+    })} />
+
     <title>{pageTitle}</title>
 
     <!-- 暗色模式：首屏前注入，避免闪烁 -->

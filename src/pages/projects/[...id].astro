@@ -14,6 +14,12 @@ export async function getStaticPaths() {
 
 const { project } = Astro.props;
 const { Content } = await render(project);
+
+// 相关项目：同标签，排除自己
+const allProjects = await getProjects();
+const related = allProjects
+  .filter((p) => p.id !== project.id && p.data.tags.some((t) => project.data.tags.includes(t)))
+  .slice(0, 3);
 ---
 
 <BaseLayout title={project.data.title} description={project.data.description}>
@@ -63,7 +69,7 @@ const { Content } = await render(project);
       <ProjectCover seed={project.id} title={project.data.title} ratio="21/9" />
     )}
 
-    <div class="mt-10 leading-relaxed">
+    <div class="mt-10 leading-relaxed prose-content">
       <Content />
     </div>
 
@@ -76,6 +82,23 @@ const { Content } = await render(project);
           ))}
         </div>
       </footer>
+    )}
+
+    {related.length > 0 && (
+      <section class="mt-12 pt-8 border-t border-[var(--color-border)]">
+        <h2 class="text-sm font-medium text-[var(--color-muted)]">相关项目</h2>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {related.map((p) => (
+            <a
+              href={`/projects/${p.id}`}
+              class="block p-4 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors"
+            >
+              <h3 class="font-medium">{p.data.title}</h3>
+              <p class="mt-1 text-sm text-[var(--color-muted)] line-clamp-2">{p.data.description}</p>
+            </a>
+          ))}
+        </div>
+      </section>
     )}
   </article>
 </BaseLayout>
