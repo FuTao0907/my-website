@@ -18,7 +18,6 @@ export const SITE = {
     { text: '项目', href: '/projects' },
     { text: '博客', href: '/blog' },
     { text: '收藏', href: '/collections' },
-    { text: '现在', href: '/now' },
     { text: '关于', href: '/about' },
   ],
   social: {
