@@ -9,8 +9,8 @@ export const SITE = {
   title: 'Ange · 安歌',
   description:
     '前端工程师 Ange 的数字名片、项目陈列室与内容自留地——写博客、做项目、收藏好东西。',
-  // 上线前替换为正式域名；当前先用 pages.dev 默认域名占位
-  url: 'https://anges.pages.dev',
+  // 上线前替换为正式域名；当前先用 pages.dev 默认域名
+  url: 'https://anges-website.pages.dev',
   author: 'Ange',
   locale: 'zh-CN',
   nav: [
@@ -22,7 +22,7 @@ export const SITE = {
     { text: '现在', href: '/now' },
   ],
   social: {
-    github: 'https://github.com/',
+    github: 'https://github.com/FuTao0907',
     email: 'mailto:18010031387@163.com',
   },
 } as const;

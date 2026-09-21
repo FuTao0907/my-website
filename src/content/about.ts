@@ -35,7 +35,7 @@ export const about = {
     },
   ] satisfies AboutExperience[],
   social: {
-    github: 'https://github.com/',
+    github: 'https://github.com/FuTao0907',
     email: 'mailto:18010031387@163.com',
   },
 };
