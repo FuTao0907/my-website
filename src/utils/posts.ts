@@ -30,3 +30,28 @@ export function formatDate(d: Date): string {
     day: 'numeric',
   });
 }
+
+export interface Heading {
+  depth: number;
+  text: string;
+  slug: string;
+}
+
+/** 从 markdown 文本提取 h2/h3 标题，用于 TOC */
+export function extractHeadings(md: string): Heading[] {
+  const headings: Heading[] = [];
+  const lines = md.split('\n');
+  for (const line of lines) {
+    const match = line.match(/^(#{2,3})\s+(.+)$/);
+    if (match) {
+      const depth = match[1].length;
+      const text = match[2].trim();
+      const slug = text
+        .toLowerCase()
+        .replace(/[^\w\u4e00-\u9fa5\s-]/g, '')
+        .replace(/\s+/g, '-');
+      headings.push({ depth, text, slug });
+    }
+  }
+  return headings;
+}

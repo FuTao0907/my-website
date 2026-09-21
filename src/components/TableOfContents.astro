@@ -1,0 +1,36 @@
+---
+import type { Heading } from '@/utils/posts';
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+
+// 没有足够标题时不显示 TOC
+if (headings.length < 2) {
+  Astro.response.status = 200;
+}
+---
+
+{headings.length >= 2 && (
+  <aside class="hidden lg:block fixed right-8 top-1/2 -translate-y-1/2 w-56 max-h-[70vh] overflow-y-auto text-sm">
+    <p class="text-xs font-medium text-[var(--color-muted)] uppercase tracking-wider mb-3">目录</p>
+    <nav>
+      <ul class="space-y-2">
+        {headings.map((h) => (
+          <li>
+            <a
+              href={`#${h.slug}`}
+              class={`block text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors leading-relaxed ${
+                h.depth === 3 ? 'pl-4 text-xs' : ''
+              }`}
+            >
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </aside>
+)}
