@@ -5,8 +5,23 @@ import { getProjects, projectStatusLabel } from '@/utils/projects';
 
 const all = await getProjects();
 const filter = Astro.url.searchParams.get('status') ?? 'all';
-const filtered = filter === 'all' ? all : all.filter((p) => p.data.status === filter);
-const featured = all.filter((p) => p.data.featured);
+const techFilter = Astro.url.searchParams.get('tech') ?? 'all';
+
+// 提取所有技术栈
+const allTechs = Array.from(new Set(all.flatMap((p) => p.data.tech))).sort();
+
+let filtered = filter === 'all' ? all : all.filter((p) => p.data.status === filter);
+if (techFilter !== 'all') {
+  filtered = filtered.filter((p) => p.data.tech.includes(techFilter));
+}
+
+// featured 置顶
+const sorted = [...filtered].sort((a, b) => {
+  if (a.data.featured && !b.data.featured) return -1;
+  if (!a.data.featured && b.data.featured) return 1;
+  return 0;
+});
+
 const tabs = [
   { key: 'all', label: '全部' },
   { key: 'active', label: '进行中' },
@@ -23,7 +38,7 @@ const tabs = [
     {
       tabs.map((t) => (
         <a
-          href={`/projects?status=${t.key}`}
+          href={`/projects?status=${t.key}${techFilter !== 'all' ? `&tech=${techFilter}` : ''}`}
           class:list={[
             'px-3 py-1.5 rounded-full transition-colors',
             filter === t.key
@@ -37,9 +52,39 @@ const tabs = [
     }
   </nav>
 
+  <!-- 技术栈筛选 -->
+  {allTechs.length > 0 && (
+    <div class="mt-4 flex flex-wrap gap-2 text-xs">
+      <a
+        href={`/projects?status=${filter}`}
+        class:list={[
+          'px-2 py-1 rounded-full transition-colors',
+          techFilter === 'all'
+            ? 'bg-[var(--color-accent)] text-white'
+            : 'text-[var(--color-muted)] hover:text-[var(--color-accent)]',
+        ]}
+      >
+        全部技术
+      </a>
+      {allTechs.map((tech) => (
+        <a
+          href={`/projects?status=${filter}&tech=${tech}`}
+          class:list={[
+            'px-2 py-1 rounded-full transition-colors',
+            techFilter === tech
+              ? 'bg-[var(--color-accent)] text-white'
+              : 'text-[var(--color-muted)] hover:text-[var(--color-accent)]',
+          ]}
+        >
+          #{tech}
+        </a>
+      ))}
+    </div>
+  )}
+
   <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
     {
-      filtered.map((p) => (
+      sorted.map((p) => (
         <a href={`/projects/${p.id}`} class="group block">
           {p.data.cover ? (
             <img
@@ -76,7 +121,7 @@ const tabs = [
     }
   </div>
 
-  {filtered.length === 0 && (
+  {sorted.length === 0 && (
     <p class="mt-10 text-[var(--color-muted)]">这个分类下还没有项目。</p>
   )}
 </BaseLayout>

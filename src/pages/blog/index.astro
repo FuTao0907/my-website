@@ -7,13 +7,19 @@ const categories = ['tech', 'life'] as const;
 const activeCat = Astro.url.searchParams.get('cat') ?? 'all';
 const filtered =
   activeCat === 'all' ? posts : posts.filter((p) => p.data.category === activeCat);
+
+// 标签云：统计每个标签的文章数
+const tagCounts: Record<string, number> = {};
+posts.forEach((p) => p.data.tags.forEach((t) => { tagCounts[t] = (tagCounts[t] ?? 0) + 1; }));
+const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
+const maxCount = Math.max(...Object.values(tagCounts), 1);
 ---
 
 <BaseLayout title="博客" description="Ange 的技术笔记与生活记录">
   <h1 class="text-3xl font-bold">博客</h1>
   <p class="mt-2 text-[var(--color-muted)]">共 {posts.length} 篇。</p>
 
-  <nav class="mt-6 flex gap-2 text-sm">
+  <nav class="mt-6 flex flex-wrap gap-2 text-sm">
     <a
       href="/blog"
       class:list={[
@@ -39,6 +45,24 @@ const filtered =
       </a>
     ))}
   </nav>
+
+  <!-- 标签云 -->
+  {sortedTags.length > 0 && (
+    <div class="mt-6 flex flex-wrap gap-2">
+      {sortedTags.map(([tag, count]) => {
+        const size = 0.8 + (count / maxCount) * 0.6; // 0.8rem ~ 1.4rem
+        return (
+          <a
+            href={`/blog/tags/${tag}`}
+            class="text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors"
+            style={`font-size: ${size}rem`}
+          >
+            #{tag}
+          </a>
+        );
+      })}
+    </div>
+  )}
 
   <ul class="mt-10 space-y-8">
     {
