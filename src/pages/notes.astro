@@ -1,0 +1,55 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { render } from 'astro:content';
+import { getCollection } from 'astro:content';
+
+const all = (await getCollection('notes')).filter((n) => !import.meta.env.PROD || !n.data.draft);
+const sorted = all.sort((a, b) => b.data.published.valueOf() - a.data.published.valueOf());
+
+// 渲染所有 notes 的内容
+const rendered = await Promise.all(
+  sorted.map(async (note) => {
+    const { Content } = await render(note);
+    return { note, Content };
+  })
+);
+
+function formatDate(d: Date): string {
+  return d.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+---
+
+<BaseLayout title="一闪念" description="Ange 的短想法与碎片记录">
+  <h1 class="text-3xl font-bold">一闪念</h1>
+  <p class="mt-2 text-[var(--color-muted)]">短想法、灵感、碎碎念。随手记下来，不怕忘。</p>
+
+  <div class="mt-10 space-y-8">
+    {
+      rendered.map(({ note, Content }) => (
+        <article class="pb-8 border-b border-[var(--color-border)] last:border-0">
+          <time datetime={note.data.published.toISOString()} class="text-sm text-[var(--color-muted)]">
+            {formatDate(note.data.published)}
+          </time>
+          <div class="mt-3 prose-content leading-[1.8]">
+            <Content />
+          </div>
+          {note.data.tags.length > 0 && (
+            <div class="mt-4 flex flex-wrap gap-2 text-sm text-[var(--color-muted)]">
+              {note.data.tags.map((t) => (
+                <span>#{t}</span>
+              ))}
+            </div>
+          )}
+        </article>
+      ))
+    }
+  </div>
+
+  {rendered.length === 0 && (
+    <p class="mt-10 text-[var(--color-muted)]">还没有一闪念，等我想到什么就记下来。</p>
+  )}
+</BaseLayout>

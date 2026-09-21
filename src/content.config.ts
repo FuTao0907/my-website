@@ -98,4 +98,14 @@ const links = defineCollection({
   }),
 });
 
-export const collections = { blog, projects, books, music, novels, videos, links };
+/** Notes：一闪念，短想法/碎片记录 */
+const notes = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/notes' }),
+  schema: z.object({
+    published: z.coerce.date(),
+    tags: z.array(z.string()).default([]),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { blog, projects, books, music, novels, videos, links, notes };

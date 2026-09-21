@@ -17,6 +17,7 @@ export const SITE = {
     { text: '首页', href: '/' },
     { text: '项目', href: '/projects' },
     { text: '博客', href: '/blog' },
+    { text: '一闪念', href: '/notes' },
     { text: '收藏', href: '/collections' },
     { text: '关于', href: '/about' },
   ],
