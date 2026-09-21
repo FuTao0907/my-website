@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Ange's website — 数字名片 + 项目陈列室 + 内容自留地",
+  "packageManager": "yarn@1.22.19",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
