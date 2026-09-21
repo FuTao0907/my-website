@@ -1,0 +1,127 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const books = (await getCollection('books')).filter((b) => !import.meta.env.PROD || !b.data.draft);
+const music = (await getCollection('music')).filter((m) => !import.meta.env.PROD || !m.data.draft);
+const novels = (await getCollection('novels')).filter((n) => !import.meta.env.PROD || !n.data.draft);
+const videos = (await getCollection('videos')).filter((v) => !import.meta.env.PROD || !v.data.draft);
+const links = (await getCollection('links')).filter((l) => !import.meta.env.PROD || !l.data.draft);
+
+// 计算统计数据
+const stats = {
+  books: {
+    total: books.length,
+    finished: books.filter((b) => b.data.status === 'finished').length,
+    avgRating: books.filter((b) => b.data.rating).length > 0
+      ? (books.filter((b) => b.data.rating).reduce((sum, b) => sum + (b.data.rating ?? 0), 0) / books.filter((b) => b.data.rating).length).toFixed(1)
+      : '—',
+  },
+  music: {
+    total: music.length,
+    ongoing: music.filter((m) => m.data.status === 'ongoing').length,
+    avgRating: music.filter((m) => m.data.rating).length > 0
+      ? (music.filter((m) => m.data.rating).reduce((sum, m) => sum + (m.data.rating ?? 0), 0) / music.filter((m) => m.data.rating).length).toFixed(1)
+      : '—',
+  },
+  novels: {
+    total: novels.length,
+    ongoing: novels.filter((n) => n.data.status === 'ongoing').length,
+    avgRating: novels.filter((n) => n.data.rating).length > 0
+      ? (novels.filter((n) => n.data.rating).reduce((sum, n) => sum + (n.data.rating ?? 0), 0) / novels.filter((n) => n.data.rating).length).toFixed(1)
+      : '—',
+  },
+  videos: {
+    total: videos.length,
+    finished: videos.filter((v) => v.data.status === 'finished').length,
+    avgRating: videos.filter((v) => v.data.rating).length > 0
+      ? (videos.filter((v) => v.data.rating).reduce((sum, v) => sum + (v.data.rating ?? 0), 0) / videos.filter((v) => v.data.rating).length).toFixed(1)
+      : '—',
+  },
+};
+---
+
+<BaseLayout title="收藏统计" description="Ange 的收藏数据统计">
+  <meta name="pagefind-ignore" content="true" />
+
+  <!-- 面包屑 -->
+  <nav class="text-sm text-[var(--color-muted)] mb-6">
+    <a href="/" class="hover:text-[var(--color-accent)]">首页</a>
+    <span class="mx-2">/</span>
+    <a href="/collections" class="hover:text-[var(--color-accent)]">收藏</a>
+    <span class="mx-2">/</span>
+    <span class="text-[var(--color-fg)]">统计</span>
+  </nav>
+
+  <h1 class="text-3xl font-bold mb-8">收藏统计</h1>
+
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <!-- 书单 -->
+    <div class="p-6 rounded-lg border border-[var(--color-border)]">
+      <div class="text-3xl mb-2">📚</div>
+      <div class="text-2xl font-bold">{stats.books.total}</div>
+      <div class="text-sm text-[var(--color-muted)] mt-1">本书</div>
+      <div class="mt-4 text-sm space-y-1">
+        <div class="flex justify-between">
+          <span class="text-[var(--color-muted)]">已读完</span>
+          <span>{stats.books.finished}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-[var(--color-muted)]">平均评分</span>
+          <span>{stats.avgRating}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 音乐 -->
+    <div class="p-6 rounded-lg border border-[var(--color-border)]">
+      <div class="text-3xl mb-2">🎵</div>
+      <div class="text-2xl font-bold">{stats.music.total}</div>
+      <div class="text-sm text-[var(--color-muted)] mt-1">首音乐</div>
+      <div class="mt-4 text-sm space-y-1">
+        <div class="flex justify-between">
+          <span class="text-[var(--color-muted)]">常听</span>
+          <span>{stats.music.ongoing}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-[var(--color-muted)]">平均评分</span>
+          <span>{stats.music.avgRating}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 网文 -->
+    <div class="p-6 rounded-lg border border-[var(--color-border)]">
+      <div class="text-3xl mb-2">📖</div>
+      <div class="text-2xl font-bold">{stats.novels.total}</div>
+      <div class="text-sm text-[var(--color-muted)] mt-1">本网文</div>
+      <div class="mt-4 text-sm space-y-1">
+        <div class="flex justify-between">
+          <span class="text-[var(--color-muted)]">在追</span>
+          <span>{stats.novels.ongoing}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-[var(--color-muted)]">平均评分</span>
+          <span>{stats.novels.avgRating}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 影视 -->
+    <div class="p-6 rounded-lg border border-[var(--color-border)]">
+      <div class="text-3xl mb-2">🎬</div>
+      <div class="text-2xl font-bold">{stats.videos.total}</div>
+      <div class="text-sm text-[var(--color-muted)] mt-1">部影视</div>
+      <div class="mt-4 text-sm space-y-1">
+        <div class="flex justify-between">
+          <span class="text-[var(--color-muted)]">已看完</span>
+          <span>{stats.videos.finished}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-[var(--color-muted)]">平均评分</span>
+          <span>{stats.videos.avgRating}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
