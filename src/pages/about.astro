@@ -1,16 +1,46 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { about as data } from '@/content/about';
+import { getProjects } from '@/utils/projects';
+
+const projects = await getProjects();
+const featuredProjects = projects.filter((p) => p.data.featured).slice(0, 3);
 ---
 
 <BaseLayout title="关于我" description={`${data.name} · ${data.role}`}>
   <section class="py-8">
-    <h1 class="text-4xl font-bold">{data.name}</h1>
-    <p class="mt-2 text-lg text-[var(--color-muted)]">
-      {data.role} · {data.location}
-    </p>
-    <p class="mt-6 text-lg leading-relaxed">{data.tagline}</p>
+    <div class="flex flex-col md:flex-row gap-8 items-start">
+      <img
+        src="/avatar.jpg"
+        alt={data.name}
+        class="w-24 h-24 rounded-full object-cover border-2 border-[var(--color-border)]"
+      />
+      <div>
+        <h1 class="text-4xl font-bold">{data.name}</h1>
+        <p class="mt-2 text-lg text-[var(--color-muted)]">
+          {data.role} · {data.location}
+        </p>
+        <p class="mt-6 text-lg leading-relaxed">{data.tagline}</p>
+      </div>
+    </div>
   </section>
+
+  {featuredProjects.length > 0 && (
+    <section class="py-8 border-t border-[var(--color-border)]">
+      <h2 class="text-2xl font-semibold">精选项目</h2>
+      <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {featuredProjects.map((p) => (
+          <a
+            href={`/projects/${p.id}`}
+            class="group block p-5 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors"
+          >
+            <h3 class="font-medium group-hover:text-[var(--color-accent)] transition-colors">{p.data.title}</h3>
+            <p class="mt-2 text-sm text-[var(--color-muted)] leading-relaxed">{p.data.description}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
 
   <section class="py-8 border-t border-[var(--color-border)]">
     <h2 class="text-2xl font-semibold">技能</h2>
