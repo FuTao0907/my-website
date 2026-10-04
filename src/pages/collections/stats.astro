@@ -6,7 +6,6 @@ const books = (await getCollection('books')).filter((b) => !import.meta.env.PROD
 const music = (await getCollection('music')).filter((m) => !import.meta.env.PROD || !m.data.draft);
 const novels = (await getCollection('novels')).filter((n) => !import.meta.env.PROD || !n.data.draft);
 const videos = (await getCollection('videos')).filter((v) => !import.meta.env.PROD || !v.data.draft);
-const links = (await getCollection('links')).filter((l) => !import.meta.env.PROD || !l.data.draft);
 
 // 计算统计数据
 const stats = {
@@ -68,7 +67,7 @@ const stats = {
         </div>
         <div class="flex justify-between">
           <span class="text-[var(--color-muted)]">平均评分</span>
-          <span>{stats.avgRating}</span>
+          <span>{stats.books.avgRating}</span>
         </div>
       </div>
     </div>

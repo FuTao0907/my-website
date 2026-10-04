@@ -1,4 +1,6 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
+// Astro 7 直接使用 zod v4 的 z（astro:content / astro:schema 的 z 均已标记 deprecated）
+import { z } from 'zod';
 import { glob } from 'astro/loaders';
 
 /**
@@ -29,8 +31,8 @@ const projects = defineCollection({
     status: z.enum(['active', 'completed', 'archived']).default('active'),
     description: z.string().max(120),
     cover: z.string().optional(),
-    demo: z.string().url().optional(),
-    repo: z.string().url().optional(),
+    demo: z.url().optional(),
+    repo: z.url().optional(),
     tech: z.array(z.string()).default([]),
     tags: z.array(z.string()).default([]),
     startDate: z.coerce.date(),
@@ -46,7 +48,7 @@ const collectBase = {
   author: z.string().optional(),
   rating: z.number().min(1).max(5).optional(),
   status: z.enum(['wishlist', 'ongoing', 'finished']).default('ongoing'),
-  link: z.string().url().optional(),
+  link: z.url().optional(),
   cover: z.string().optional(),
   tags: z.array(z.string()).default([]),
   finishedDate: z.coerce.date().optional(),

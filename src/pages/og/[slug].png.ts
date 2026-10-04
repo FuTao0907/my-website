@@ -12,7 +12,7 @@ import { isPublicProject } from '@/utils/projects';
 const FONT_PATH = resolve(process.cwd(), 'src/assets/NotoSansSC-Regular.woff2');
 readFileSync(FONT_PATH); // 构建期确认字体存在，缺失直接报错
 
-function escapeXml(s) {
+function escapeXml(s: string): string {
   return s
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -22,7 +22,7 @@ function escapeXml(s) {
 }
 
 /** 估算文本渲染宽度：中文/全角 60px，英文/数字 32px（对应 60px 字号） */
-function measureWidth(s) {
+function measureWidth(s: string): number {
   return [...s].reduce(
     (w, ch) => w + (/[\u2e80-\u9fff\uf900-\ufaff\uff00-\uffef\u3000-\u303f]/.test(ch) ? 60 : 32),
     0,
@@ -30,7 +30,7 @@ function measureWidth(s) {
 }
 
 /** 标题自动换行：按像素宽度截断（最大行宽 1000px），最多 3 行，超出加省略号 */
-function wrapText(text, maxWidth = 1000, maxLines = 3) {
+function wrapText(text: string, maxWidth = 1000, maxLines = 3): string[] {
   const chars = [...text];
   const lines = [];
   let line = '';
@@ -54,7 +54,7 @@ function wrapText(text, maxWidth = 1000, maxLines = 3) {
 }
 
 /** SVG 模板：极简单色风格，深色底 + accent 竖条 + 白标题 */
-function buildSvg(title, label) {
+function buildSvg(title: string, label: string): string {
   const lines = wrapText(title);
   const y0 = 300;
   const lineHeight = 88;
@@ -84,7 +84,7 @@ export async function getStaticPaths() {
   ];
 }
 
-export const GET = async ({ props }) => {
+export const GET = async ({ props }: { props: { title: string; label: string } }) => {
   const { title, label } = props;
   const svg = buildSvg(title, label);
   const resvg = new Resvg(svg, {
@@ -92,7 +92,7 @@ export const GET = async ({ props }) => {
     font: { fontFiles: [FONT_PATH], defaultFontFamily: 'Noto Sans SC' },
   });
   const png = resvg.render().asPng();
-  return new Response(png, {
+  return new Response(new Uint8Array(png), {
     headers: {
       'Content-Type': 'image/png',
       'Cache-Control': 'public, max-age=31536000, immutable',

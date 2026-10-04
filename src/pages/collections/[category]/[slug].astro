@@ -3,14 +3,6 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { render } from 'astro:content';
 import { getCollection, type CollectionEntry } from 'astro:content';
 
-type CollectionMap = {
-  books: CollectionEntry<'books'>;
-  music: CollectionEntry<'music'>;
-  novels: CollectionEntry<'novels'>;
-  videos: CollectionEntry<'videos'>;
-  links: CollectionEntry<'links'>;
-};
-
 const categoryNames: Record<string, string> = {
   books: '书单',
   music: '音乐',
@@ -36,7 +28,7 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { category, slug } = Astro.params;
+const { category } = Astro.params;
 const { item } = Astro.props;
 const { Content } = await render(item as any);
 const categoryName = categoryNames[category ?? ''] ?? '收藏';

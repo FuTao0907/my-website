@@ -5,8 +5,6 @@ import { getProjects, projectStatusLabel } from '@/utils/projects';
 import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
 import avatar from '@/assets/avatar.jpg';
-import { SITE } from '@/config';
-import { about } from '@/content/about';
 
 const posts = await getPublishedPosts();
 const recentPosts = posts.slice(0, 3);

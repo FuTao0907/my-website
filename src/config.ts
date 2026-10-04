@@ -12,6 +12,7 @@ export const SITE = {
   // 上线前替换为正式域名；当前先用 pages.dev 默认域名
   url: 'https://anges-website.pages.dev',
   author: 'Ange',
+  email: '18010031387@163.com',
   locale: 'zh-CN',
   nav: [
     { text: '首页', href: '/' },
