@@ -25,7 +25,7 @@ const maxCount = Math.max(...Object.values(tagCounts), 1);
       class:list={[
         'px-3 py-1.5 rounded-full transition-colors',
         activeCat === 'all'
-          ? 'bg-[var(--color-accent)] text-white'
+          ? 'bg-[var(--color-accent)] text-[var(--color-accent-fg)]'
           : 'border border-[var(--color-border)] hover:bg-[var(--color-border)]',
       ]}
     >
@@ -37,7 +37,7 @@ const maxCount = Math.max(...Object.values(tagCounts), 1);
         class:list={[
           'px-3 py-1.5 rounded-full transition-colors',
           activeCat === cat
-            ? 'bg-[var(--color-accent)] text-white'
+            ? 'bg-[var(--color-accent)] text-[var(--color-accent-fg)]'
             : 'border border-[var(--color-border)] hover:bg-[var(--color-border)]',
         ]}
       >

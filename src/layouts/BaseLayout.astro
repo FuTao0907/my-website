@@ -70,7 +70,7 @@ const ogImageURL = ogImage ? new URL(ogImage, SITE.url).toString() : undefined;
   <body class="min-h-screen flex flex-col">
     <a
       href="#main-content"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--color-accent)] focus:text-white focus:rounded-md"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--color-accent)] focus:text-[var(--color-accent-fg)] focus:rounded-md"
     >
       跳到主要内容
     </a>
@@ -84,7 +84,7 @@ const ogImageURL = ogImage ? new URL(ogImage, SITE.url).toString() : undefined;
     <button
       id="back-to-top"
       aria-label="回到顶部"
-      class="fixed bottom-6 right-6 w-10 h-10 rounded-full bg-[var(--color-accent)] text-white shadow-lg opacity-0 invisible transition-all duration-300 hover:opacity-90 z-40"
+      class="fixed bottom-6 right-6 w-10 h-10 rounded-full bg-[var(--color-accent)] text-[var(--color-accent-fg)] shadow-lg opacity-0 invisible transition-all duration-300 hover:opacity-90 z-40"
     >
       <svg class="w-5 h-5 mx-auto" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
