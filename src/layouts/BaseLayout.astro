@@ -1,6 +1,7 @@
 ---
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import { ClientRouter } from 'astro:transitions';
 import { SITE } from '@/config';
 import '@/styles/global.css';
 
@@ -66,8 +67,14 @@ const ogImageURL = ogImage ? new URL(ogImage, SITE.url).toString() : undefined;
         document.documentElement.classList.add('dark');
       }
     </script>
+
+    <!-- 页面过渡路由（内置 prefetch，hover/视口预取新页） -->
+    <ClientRouter />
   </head>
   <body class="min-h-screen flex flex-col">
+    <!-- 路由进度条（切换加载反馈） -->
+    <div id="route-progress" aria-hidden="true"></div>
+
     <a
       href="#main-content"
       class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--color-accent)] focus:text-[var(--color-accent-fg)] focus:rounded-md"
@@ -90,10 +97,31 @@ const ogImageURL = ogImage ? new URL(ogImage, SITE.url).toString() : undefined;
         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
       </svg>
     </button>
+
+    <!-- 统一 Toast（P2-9） -->
+    <div id="toast-container" aria-live="polite"></div>
   </body>
 </html>
 
 <script>
+  // 统一 Toast（P2-9）：window.showToast(message, type)
+  // type: 'success' | 'error'，默认 success；自动 2.2s 消失
+  window.showToast = function (message: string, type: 'success' | 'error' = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'toast' + (type === 'error' ? ' error' : '');
+    toast.textContent = message;
+    container.appendChild(toast);
+    // 下一帧加 show 触发过渡
+    requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.classList.add('hide');
+      setTimeout(() => toast.remove(), 220);
+    }, 2200);
+  };
+
   // 回到顶部按钮
   const backToTop = document.getElementById('back-to-top');
   if (backToTop) {
@@ -108,6 +136,62 @@ const ogImageURL = ogImage ? new URL(ogImage, SITE.url).toString() : undefined;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
+
+  // 路由进度条（P0-1 方案 C：点击立即反馈 + 新页补满 100%）
+  const progress = document.getElementById('route-progress');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function startRouteProgress() {
+    if (!progress || reduceMotion) return;
+    sessionStorage.setItem('route-nav', '1');
+    progress.style.transition = '';
+    progress.classList.remove('active');
+    progress.style.width = '0%';
+    // 强制 reflow，保证 0 → 90% 的 transition 生效
+    void progress.offsetWidth;
+    progress.classList.add('active');
+    progress.style.width = '90%';
+  }
+
+  function finishRouteProgress() {
+    if (!progress || !sessionStorage.getItem('route-nav')) return;
+    sessionStorage.removeItem('route-nav');
+    // 新页进度条重新可见并补满 100%，停留 300ms 后淡出重置（保证用户能看到完成反馈）
+    progress.classList.add('active');
+    progress.style.width = '100%';
+    setTimeout(() => {
+      progress.style.transition = 'none';
+      progress.style.width = '0%';
+      progress.classList.remove('active');
+      void progress.offsetWidth;
+      progress.style.transition = '';
+    }, 300);
+  }
+
+  // 捕获阶段拦截内部链接点击（先于 ClientRouter，点击即显示进度条）
+  document.addEventListener(
+    'click',
+    (e) => {
+      const el = e.target as Element | null;
+      const a = el?.closest?.('a');
+      if (!a) return;
+      const href = a.getAttribute('href');
+      if (!href || href.startsWith('#') || a.target === '_blank' || a.hasAttribute('download')) {
+        return;
+      }
+      try {
+        const url = new URL(a.href, location.href);
+        if (url.origin !== location.origin) return;
+      } catch {
+        return;
+      }
+      startRouteProgress();
+    },
+    true,
+  );
+
+  // ClientRouter 每次导航完成（新页 ready）后触发
+  document.addEventListener('astro:page-load', finishRouteProgress);
 
   // 键盘快捷键：按 / 快速打开搜索
   document.addEventListener('keydown', (e) => {

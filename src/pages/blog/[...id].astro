@@ -147,7 +147,7 @@ const related = all
     });
   }
 
-  // 代码块一键复制
+  // 代码块一键复制（反馈走统一 Toast，P2-9）
   document.querySelectorAll('pre').forEach((pre) => {
     const button = document.createElement('button');
     button.className = 'code-copy-btn';
@@ -157,28 +157,24 @@ const related = all
       const code = pre.querySelector('code')?.textContent ?? '';
       try {
         await navigator.clipboard.writeText(code);
-        button.textContent = '已复制';
-        setTimeout(() => (button.textContent = '复制'), 2000);
+        window.showToast?.('代码已复制');
       } catch {
-        button.textContent = '失败';
-        setTimeout(() => (button.textContent = '复制'), 2000);
+        window.showToast?.('复制失败，请手动选择复制', 'error');
       }
     });
     pre.style.position = 'relative';
     pre.appendChild(button);
   });
 
-  // 分享：复制链接
+  // 分享：复制链接（反馈走统一 Toast，P2-9）
   const shareCopy = document.getElementById('share-copy');
   if (shareCopy) {
     shareCopy.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(window.location.href);
-        shareCopy.textContent = '已复制';
-        setTimeout(() => (shareCopy.textContent = '复制链接'), 2000);
+        window.showToast?.('链接已复制');
       } catch {
-        shareCopy.textContent = '失败';
-        setTimeout(() => (shareCopy.textContent = '复制链接'), 2000);
+        window.showToast?.('复制失败，请手动复制地址栏链接', 'error');
       }
     });
   }

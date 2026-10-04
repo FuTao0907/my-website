@@ -140,8 +140,13 @@
 - **状态**：修复中（DNS 合并后等待重新验证）
 - **备注**：EdgeOne 免费套餐全球加速且流量不计量，**没必要保留"国外直连 pages.dev"的默认线路**，全量走 EdgeOne 反而避免 CA 验证和源站 409 两类问题；CNAME 接入 + 分线路的组合对免费证书不友好
 
-<!--
-示例（不要删，只作模板参考）：
+### ISSUE-015：静态托管下 URL query 筛选完全不生效（v1.0 遗留）
+- **日期**：2026-10-04
+- **现象**：本地 `astro dev` 下 `/projects?tech=zzz` 能正确过滤为空；但 `astro preview`（= Cloudflare Pages 静态托管行为）访问同一 URL 却显示全部项目——项目/博客/收藏所有筛选 tab 在线上都是"死"的
+- **根因**：Astro 静态生成（SSG）页面时 `Astro.url.searchParams` 是构建期 URL（无 query），服务端按 `?status=xxx` 做的过滤在构建时被固化为"全部"。本地 dev 是 SSR 动态渲染所以正常，preview/线上是纯静态 HTML，query 参数无人消费
+- **解决方案**：改为"全量渲染 + 客户端过滤"——页面输出全部数据卡片（带 `data-status`/`data-tech`/`data-rating`/`data-date` 属性），`<script is:inline>` 在客户端解析 `location.search` 过滤/排序 DOM；筛选链接点击 `preventDefault` + `history.pushState` 无刷新过滤（跨维度参数互相保留），监听 `popstate` 支持前进后退；空态容器预置 hidden，客户端按结果显隐
+- **状态**：已解决（浏览器实测 `?tech=zzz` → 空态+清除筛选；点"进行中" → URL 合并为 `?status=active&tech=zzz`）
+- **备注**：**以后所有依赖 URL query 的筛选/分页，一律客户端实现，不要在 SSG 构建时读 searchParams 过滤**；涉及页面：projects/index、blog/index、collections/{books,links,novels,music,videos}/index
 
 ### ISSUE-001：Astro 部署到 Cloudflare Pages 后图片不显示
 - **日期**：2026-09-21

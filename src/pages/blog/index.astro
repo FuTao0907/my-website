@@ -1,12 +1,10 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import EmptyState from '@/components/EmptyState.astro';
 import { getPublishedPosts, formatDate } from '@/utils/posts';
 
 const posts = await getPublishedPosts();
 const categories = ['tech', 'life'] as const;
-const activeCat = Astro.url.searchParams.get('cat') ?? 'all';
-const filtered =
-  activeCat === 'all' ? posts : posts.filter((p) => p.data.category === activeCat);
 
 // 标签云：统计每个标签的文章数
 const tagCounts: Record<string, number> = {};
@@ -22,24 +20,18 @@ const maxCount = Math.max(...Object.values(tagCounts), 1);
   <nav class="mt-6 flex flex-wrap gap-2 text-sm">
     <a
       href="/blog"
-      class:list={[
-        'px-3 py-1.5 rounded-full transition-colors',
-        activeCat === 'all'
-          ? 'bg-[var(--color-accent)] text-[var(--color-accent-fg)]'
-          : 'border border-[var(--color-border)] hover:bg-[var(--color-border)]',
-      ]}
+      data-cat-tab="all"
+      data-filter-link
+      class="px-3 py-1.5 rounded-full border border-[var(--color-border)] hover:bg-[var(--color-border)] transition-colors"
     >
       全部
     </a>
     {categories.map((cat) => (
       <a
         href={`/blog?cat=${cat}`}
-        class:list={[
-          'px-3 py-1.5 rounded-full transition-colors',
-          activeCat === cat
-            ? 'bg-[var(--color-accent)] text-[var(--color-accent-fg)]'
-            : 'border border-[var(--color-border)] hover:bg-[var(--color-border)]',
-        ]}
+        data-cat-tab={cat}
+        data-filter-link
+        class="px-3 py-1.5 rounded-full border border-[var(--color-border)] hover:bg-[var(--color-border)] transition-colors"
       >
         {cat === 'tech' ? '技术' : '生活'}
       </a>
@@ -66,8 +58,8 @@ const maxCount = Math.max(...Object.values(tagCounts), 1);
 
   <ul class="mt-10 space-y-8">
     {
-      filtered.map((post) => (
-        <li class="group">
+      posts.map((post) => (
+        <li class="post-card group" data-cat={post.data.category}>
           <a href={`/blog/${post.id}`} class="block">
             <div class="flex items-baseline gap-3 text-sm text-[var(--color-muted)]">
               <time>{formatDate(post.data.published)}</time>
@@ -75,6 +67,7 @@ const maxCount = Math.max(...Object.values(tagCounts), 1);
             </div>
             <h2 class="mt-1 text-xl font-semibold group-hover:text-[var(--color-accent)] transition-colors">
               {post.data.title}
+              <span aria-hidden="true" class="inline-block ml-1 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all">→</span>
             </h2>
             {post.data.summary && (
               <p class="mt-1 text-[var(--color-muted)]">{post.data.summary}</p>
@@ -85,7 +78,70 @@ const maxCount = Math.max(...Object.values(tagCounts), 1);
     }
   </ul>
 
-  {filtered.length === 0 && (
-    <p class="mt-10 text-[var(--color-muted)]">还没有文章，等我写完。</p>
-  )}
+  <!-- 空态：默认隐藏，由客户端脚本按分类结果显示 -->
+  <div id="empty-filter" class="hidden">
+    <EmptyState
+      icon="🔍"
+      title="这个分类下还没有文章"
+      description="换个分类看看，或者查看全部文章。"
+      actionHref="/blog"
+      actionLabel="全部文章"
+    />
+  </div>
+  <div id="empty-none" class="hidden">
+    <EmptyState
+      icon="📭"
+      title="还没有文章"
+      description="写完的文章会发布在这里，包括技术笔记和生活记录。"
+      actionHref="/notes"
+      actionLabel="看看一闪念"
+    />
+  </div>
 </BaseLayout>
+
+<script is:inline>
+  // 客户端分类筛选（P1-7）：静态托管下 URL query 在构建时不可用，改为客户端解析过滤
+  (function () {
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.post-card'));
+    var emptyFilter = document.getElementById('empty-filter');
+    var emptyNone = document.getElementById('empty-none');
+    var catTabs = Array.prototype.slice.call(document.querySelectorAll('[data-cat-tab]'));
+    if (!cards.length) return;
+
+    var ACTIVE = 'bg-[var(--color-accent)] text-[var(--color-accent-fg)] px-3 py-1.5 rounded-full transition-colors';
+    var IDLE = 'border border-[var(--color-border)] hover:bg-[var(--color-border)] px-3 py-1.5 rounded-full transition-colors';
+
+    function apply() {
+      var params = new URLSearchParams(location.search);
+      var cat = params.get('cat') || 'all';
+      var visible = 0;
+      cards.forEach(function (card) {
+        var ok = cat === 'all' || card.dataset.cat === cat;
+        card.style.display = ok ? '' : 'none';
+        if (ok) visible++;
+      });
+      catTabs.forEach(function (a) {
+        a.className = a.dataset.catTab === cat ? ACTIVE : IDLE;
+      });
+      var hasFilter = cat !== 'all';
+      if (visible === 0) {
+        emptyFilter.style.display = hasFilter ? 'block' : 'none';
+        emptyNone.style.display = hasFilter ? 'none' : 'block';
+      } else {
+        emptyFilter.style.display = 'none';
+        emptyNone.style.display = 'none';
+      }
+    }
+
+    document.querySelectorAll('[data-filter-link]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var next = new URLSearchParams((a.getAttribute('href') || '').split('?')[1] || '');
+        history.pushState({}, '', next.toString() ? '?' + next.toString() : '/blog');
+        apply();
+      });
+    });
+    window.addEventListener('popstate', apply);
+    apply();
+  })();
+</script>

@@ -12,8 +12,35 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
     placeholder="输入关键词... (按 / 快速打开)"
     class="mt-6 w-full px-4 py-3 rounded-lg border border-[var(--color-border)] bg-transparent focus:outline-none focus:border-[var(--color-accent)]"
   />
+  <!-- 加载中：spinner + 文案（P1-5） -->
+  <div id="search-loading" class="mt-6 hidden items-center gap-2 text-sm text-[var(--color-muted)]">
+    <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    <span>搜索中…</span>
+  </div>
   <div id="search-results" class="mt-6 space-y-4"></div>
+  <!-- 结果统计 -->
   <p id="search-status" aria-live="polite" class="mt-4 text-sm text-[var(--color-muted)]"></p>
+  <!-- 空状态（P1-4）：无结果时显示 -->
+  <div id="search-empty" class="hidden flex-col items-center mt-6 py-16 px-6 text-center rounded-xl border border-dashed border-[var(--color-border)]">
+    <div class="text-4xl" aria-hidden="true">🔍</div>
+    <p class="mt-4 font-medium">没有找到相关内容</p>
+    <p class="mt-1 text-sm text-[var(--color-muted)]">换个关键词试试，或者浏览全部内容。</p>
+  </div>
+  <!-- 错误状态（P1-6）：索引加载/搜索失败时显示 -->
+  <div id="search-error" class="hidden flex-col items-center mt-6 py-16 px-6 text-center rounded-xl border border-dashed border-[var(--color-border)]">
+    <div class="text-4xl" aria-hidden="true">⚠️</div>
+    <p class="mt-4 font-medium">搜索暂时不可用</p>
+    <p class="mt-1 text-sm text-[var(--color-muted)]">索引加载失败，可能是网络问题。</p>
+    <button
+      id="search-retry"
+      class="mt-6 inline-flex items-center px-5 py-2.5 rounded-md border border-[var(--color-border)] text-sm font-medium hover:bg-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors"
+    >
+      重试
+    </button>
+  </div>
 </BaseLayout>
 
 <script is:inline>
@@ -21,11 +48,39 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
     var input = document.getElementById('search-input');
     var results = document.getElementById('search-results');
     var status = document.getElementById('search-status');
+    var loading = document.getElementById('search-loading');
+    var emptyBox = document.getElementById('search-empty');
+    var errorBox = document.getElementById('search-error');
+    var retryBtn = document.getElementById('search-retry');
     if (!input || !results) return;
 
     // 浏览器原生 ESM 动态 import，不经过 Vite 打包
-    var pagefind = await import('/pagefind/pagefind.js');
-    await pagefind.init();
+    var pagefind = null;
+    function show(el) {
+      el.classList.remove('hidden');
+      el.classList.add('flex'); // loading 需要 flex
+    }
+    function hide(el) {
+      el.classList.add('hidden');
+      el.classList.remove('flex');
+    }
+
+    try {
+      var mod = await import('/pagefind/pagefind.js');
+      await mod.init();
+      pagefind = mod;
+      input.disabled = false;
+    } catch (e) {
+      console.error('Pagefind 索引加载失败：', e);
+      hide(loading);
+      show(errorBox);
+      retryBtn.addEventListener('click', function () {
+        hide(errorBox);
+        show(loading);
+        initSearch(); // 重新加载索引
+      });
+      return;
+    }
 
     var timer;
     input.addEventListener('input', function () {
@@ -35,28 +90,53 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
         if (!q) {
           results.innerHTML = '';
           status.textContent = '';
+          hide(loading);
+          hide(emptyBox);
+          hide(errorBox);
           return;
         }
-        status.textContent = '搜索中...';
+        show(loading);
+        hide(emptyBox);
+        hide(errorBox);
         try {
           var res = await pagefind.search(q);
+          hide(loading);
           status.textContent = '找到 ' + res.results.length + ' 个结果';
           results.innerHTML = '';
+          if (res.results.length === 0) {
+            show(emptyBox);
+            return;
+          }
+          hide(emptyBox);
           var slice = res.results.slice(0, 10);
           for (var i = 0; i < slice.length; i++) {
             var data = await slice[i].data();
             var a = document.createElement('a');
             a.href = data.url;
             a.className =
-              'block p-4 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)]';
+              'group block p-4 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors';
             var title = document.createElement('div');
-            title.className = 'font-medium';
+            title.className = 'font-medium group-hover:text-[var(--color-accent)] transition-colors';
             title.textContent = (data.meta && data.meta.title) || '无标题';
+            var arrow = document.createElement('span');
+            arrow.setAttribute('aria-hidden', 'true');
+            arrow.className =
+              'inline-block ml-1 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all';
+            arrow.textContent = '→';
+            title.appendChild(arrow);
             a.appendChild(title);
+            if (data.excerpt) {
+              var excerpt = document.createElement('div');
+              excerpt.className = 'mt-1 text-sm text-[var(--color-muted)] line-clamp-2';
+              excerpt.innerHTML = data.excerpt;
+              a.appendChild(excerpt);
+            }
             results.appendChild(a);
           }
         } catch (e) {
-          status.textContent = '搜索出错：' + String(e);
+          console.error('搜索失败：', e);
+          hide(loading);
+          show(errorBox);
         }
       }, 300);
     });

@@ -7,12 +7,18 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
     <h1 class="text-8xl font-bold text-[var(--color-accent)]">404</h1>
     <p class="mt-6 text-xl text-[var(--color-muted)]">这个页面走丢了</p>
     <p class="mt-2 text-sm text-[var(--color-muted)]">它可能去了别的地方，或者从来就不存在</p>
-    <div class="mt-10 flex items-center justify-center gap-4">
+    <div class="mt-10 flex items-center justify-center gap-4 flex-wrap">
       <a
         href="/"
         class="px-5 py-2.5 rounded-md bg-[var(--color-accent)] text-[var(--color-accent-fg)] text-sm font-medium hover:opacity-90 transition-opacity"
       >
         回到首页
+      </a>
+      <a
+        href="/search"
+        class="px-5 py-2.5 rounded-md border border-[var(--color-border)] text-sm font-medium hover:bg-[var(--color-border)] transition-colors"
+      >
+        搜索全站
       </a>
       <a
         href="/blog"

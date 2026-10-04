@@ -1,25 +1,16 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import EmptyState from '@/components/EmptyState.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 
 type Book = CollectionEntry<'books'>;
 const all = (await getCollection('books')) as Book[];
 const items = all.filter((b) => !import.meta.env.PROD || !b.data.draft);
 
-const sort = Astro.url.searchParams.get('sort') ?? 'recent';
-const status = Astro.url.searchParams.get('status') ?? 'all';
-
-let filtered = items;
-if (status !== 'all') {
-  filtered = filtered.filter((item) => item.data.status === status);
-}
-
-const sorted =
-  sort === 'rating'
-    ? [...filtered].sort((a, b) => (b.data.rating ?? 0) - (a.data.rating ?? 0))
-    : [...filtered].sort(
-        (a, b) => (b.data.finishedDate?.valueOf() ?? 0) - (a.data.finishedDate?.valueOf() ?? 0),
-      );
+// 服务端按最近完成时间渲染（默认序）；sort/status 筛选在客户端按 URL query 进行
+const sorted = [...items].sort(
+  (a, b) => (b.data.finishedDate?.valueOf() ?? 0) - (a.data.finishedDate?.valueOf() ?? 0),
+);
 const excerpt = (body: string) => body.replace(/[#>*`]/g, '').trim().slice(0, 140);
 ---
 
@@ -30,27 +21,35 @@ const excerpt = (body: string) => body.replace(/[#>*`]/g, '').trim().slice(0, 14
       <!-- 排序 -->
       <div class="flex gap-2">
         <span class="text-[var(--color-muted)]">排序：</span>
-        <a href="/collections/books" class={sort === 'recent' ? 'text-[var(--color-accent)]' : ''}>最近</a>
-        <a href="/collections/books?sort=rating" class={sort === 'rating' ? 'text-[var(--color-accent)]' : ''}>评分</a>
+        <a href="/collections/books" data-sort-tab="recent" data-filter-link class="text-[var(--color-muted)] hover:text-[var(--color-accent)]">最近</a>
+        <a href="/collections/books?sort=rating" data-sort-tab="rating" data-filter-link class="text-[var(--color-muted)] hover:text-[var(--color-accent)]">评分</a>
       </div>
       <!-- 状态筛选 -->
       <div class="flex gap-2">
         <span class="text-[var(--color-muted)]">状态：</span>
-        <a href="/collections/books" class={status === 'all' ? 'text-[var(--color-accent)]' : ''}>全部</a>
-        <a href="/collections/books?status=wishlist" class={status === 'wishlist' ? 'text-[var(--color-accent)]' : ''}>想看</a>
-        <a href="/collections/books?status=ongoing" class={status === 'ongoing' ? 'text-[var(--color-accent)]' : ''}>在读</a>
-        <a href="/collections/books?status=finished" class={status === 'finished' ? 'text-[var(--color-accent)]' : ''}>读过</a>
+        <a href="/collections/books" data-status-tab="all" data-filter-link class="text-[var(--color-muted)] hover:text-[var(--color-accent)]">全部</a>
+        <a href="/collections/books?status=wishlist" data-status-tab="wishlist" data-filter-link class="text-[var(--color-muted)] hover:text-[var(--color-accent)]">想看</a>
+        <a href="/collections/books?status=ongoing" data-status-tab="ongoing" data-filter-link class="text-[var(--color-muted)] hover:text-[var(--color-accent)]">在读</a>
+        <a href="/collections/books?status=finished" data-status-tab="finished" data-filter-link class="text-[var(--color-muted)] hover:text-[var(--color-accent)]">读过</a>
       </div>
     </div>
   </div>
 
-  <ul class="mt-8 space-y-4">
+  <ul id="item-list" class="mt-8 space-y-4">
     {
       sorted.map((b) => (
-        <li>
-          <a href={`/collections/books/${b.id}`} class="block p-5 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors">
+        <li
+          class="item-card"
+          data-status={b.data.status}
+          data-rating={b.data.rating ?? 0}
+          data-date={b.data.finishedDate?.valueOf() ?? 0}
+        >
+          <a href={`/collections/books/${b.id}`} class="group block p-5 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors">
             <div class="flex items-baseline justify-between gap-4">
-              <h2 class="font-semibold group-hover:text-[var(--color-accent)]">{b.data.title}</h2>
+              <h2 class="font-semibold group-hover:text-[var(--color-accent)]">
+                {b.data.title}
+                <span aria-hidden="true" class="inline-block ml-1 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all">→</span>
+              </h2>
               {b.data.rating && (
                 <span class="text-[var(--color-accent)]">{'★'.repeat(Math.round(b.data.rating))}</span>
               )}
@@ -65,5 +64,95 @@ const excerpt = (body: string) => body.replace(/[#>*`]/g, '').trim().slice(0, 14
       ))
     }
   </ul>
-  {sorted.length === 0 && <p class="mt-8 text-[var(--color-muted)] text-sm">没有符合条件的内容。</p>}
+
+  <!-- 空态：默认隐藏，由客户端脚本按筛选结果显示 -->
+  <div id="empty-filter" class="hidden">
+    <EmptyState
+      icon="🔍"
+      title="没有符合筛选条件的书目"
+      description="换个状态筛选看看，或者查看全部书目。"
+      actionHref="/collections/books"
+      actionLabel="清除筛选"
+    />
+  </div>
+  <div id="empty-none" class="hidden">
+    <EmptyState
+      icon="📭"
+      title="书单还是空的"
+      description="读过的书会记录在这里，附上评分和短评。"
+      actionHref="/collections"
+      actionLabel="回收藏首页"
+    />
+  </div>
 </BaseLayout>
+
+<script is:inline>
+  // 客户端筛选/排序（P1-7）：静态托管下 URL query 在构建时不可用，改为客户端解析过滤
+  (function () {
+    var list = document.getElementById('item-list');
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.item-card'));
+    var emptyFilter = document.getElementById('empty-filter');
+    var emptyNone = document.getElementById('empty-none');
+    var sortTabs = Array.prototype.slice.call(document.querySelectorAll('[data-sort-tab]'));
+    var statusTabs = Array.prototype.slice.call(document.querySelectorAll('[data-status-tab]'));
+    if (!cards.length) return;
+
+    var ACTIVE = 'text-[var(--color-accent)]';
+    var IDLE = 'text-[var(--color-muted)] hover:text-[var(--color-accent)]';
+
+    function apply() {
+      var params = new URLSearchParams(location.search);
+      var sort = params.get('sort') || 'recent';
+      var status = params.get('status') || 'all';
+      var visible = cards.filter(function (card) {
+        return status === 'all' || card.dataset.status === status;
+      });
+      // 客户端重排：rating 按评分降序，recent 按完成时间降序
+      visible.sort(function (a, b) {
+        if (sort === 'rating') return (+b.dataset.rating) - (+a.dataset.rating);
+        return (+b.dataset.date) - (+a.dataset.date);
+      });
+      visible.forEach(function (card) {
+        card.style.display = '';
+        list.appendChild(card);
+      });
+      cards.forEach(function (card) {
+        if (visible.indexOf(card) < 0) card.style.display = 'none';
+      });
+      sortTabs.forEach(function (a) {
+        a.className = a.dataset.sortTab === sort ? ACTIVE : IDLE;
+      });
+      statusTabs.forEach(function (a) {
+        a.className = a.dataset.statusTab === status ? ACTIVE : IDLE;
+      });
+      var hasFilter = status !== 'all';
+      if (visible.length === 0) {
+        emptyFilter.style.display = hasFilter ? 'block' : 'none';
+        emptyNone.style.display = hasFilter ? 'none' : 'block';
+      } else {
+        emptyFilter.style.display = 'none';
+        emptyNone.style.display = 'none';
+      }
+    }
+
+    document.querySelectorAll('[data-filter-link]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var cur = new URLSearchParams(location.search);
+        var next = new URLSearchParams((a.getAttribute('href') || '').split('?')[1] || '');
+        if (a.hasAttribute('data-sort-tab')) {
+          if (cur.has('status')) next.set('status', cur.get('status'));
+          else next.delete('status');
+        }
+        if (a.hasAttribute('data-status-tab')) {
+          if (cur.has('sort')) next.set('sort', cur.get('sort'));
+          else next.delete('sort');
+        }
+        history.pushState({}, '', next.toString() ? '?' + next.toString() : '/collections/books');
+        apply();
+      });
+    });
+    window.addEventListener('popstate', apply);
+    apply();
+  })();
+</script>

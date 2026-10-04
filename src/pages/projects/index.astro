@@ -1,22 +1,16 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import ProjectCover from '@/components/ProjectCover.astro';
+import EmptyState from '@/components/EmptyState.astro';
 import { getProjects, projectStatusLabel } from '@/utils/projects';
 
 const all = await getProjects();
-const filter = Astro.url.searchParams.get('status') ?? 'all';
-const techFilter = Astro.url.searchParams.get('tech') ?? 'all';
 
 // 提取所有技术栈
 const allTechs = Array.from(new Set(all.flatMap((p) => p.data.tech))).sort();
 
-let filtered = filter === 'all' ? all : all.filter((p) => p.data.status === filter);
-if (techFilter !== 'all') {
-  filtered = filtered.filter((p) => p.data.tech.includes(techFilter));
-}
-
-// featured 置顶
-const sorted = [...filtered].sort((a, b) => {
+// featured 置顶（全量渲染；筛选在客户端按 URL query 进行——见底部 is:inline 脚本）
+const sorted = [...all].sort((a, b) => {
   if (a.data.featured && !b.data.featured) return -1;
   if (!a.data.featured && b.data.featured) return 1;
   return 0;
@@ -38,13 +32,10 @@ const tabs = [
     {
       tabs.map((t) => (
         <a
-          href={`/projects?status=${t.key}${techFilter !== 'all' ? `&tech=${techFilter}` : ''}`}
-          class:list={[
-            'px-3 py-1.5 rounded-full transition-colors',
-            filter === t.key
-              ? 'bg-[var(--color-accent)] text-[var(--color-accent-fg)]'
-              : 'border border-[var(--color-border)] hover:bg-[var(--color-border)]',
-          ]}
+          href={`/projects?status=${t.key}`}
+          data-status-tab={t.key}
+          data-filter-link
+          class="px-3 py-1.5 rounded-full border border-[var(--color-border)] hover:bg-[var(--color-border)] transition-colors"
         >
           {t.label}
         </a>
@@ -56,25 +47,19 @@ const tabs = [
   {allTechs.length > 0 && (
     <div class="mt-4 flex flex-wrap gap-2 text-xs">
       <a
-        href={`/projects?status=${filter}`}
-        class:list={[
-          'px-2 py-1 rounded-full transition-colors',
-          techFilter === 'all'
-            ? 'bg-[var(--color-accent)] text-[var(--color-accent-fg)]'
-            : 'text-[var(--color-muted)] hover:text-[var(--color-accent)]',
-        ]}
+        href="/projects"
+        data-tech-tab="all"
+        data-filter-link
+        class="px-2 py-1 rounded-full text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors"
       >
         全部技术
       </a>
       {allTechs.map((tech) => (
         <a
-          href={`/projects?status=${filter}&tech=${tech}`}
-          class:list={[
-            'px-2 py-1 rounded-full transition-colors',
-            techFilter === tech
-              ? 'bg-[var(--color-accent)] text-[var(--color-accent-fg)]'
-              : 'text-[var(--color-muted)] hover:text-[var(--color-accent)]',
-          ]}
+          href={`/projects?tech=${encodeURIComponent(tech)}`}
+          data-tech-tab={tech}
+          data-filter-link
+          class="px-2 py-1 rounded-full text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors"
         >
           #{tech}
         </a>
@@ -85,7 +70,12 @@ const tabs = [
   <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
     {
       sorted.map((p) => (
-        <a href={`/projects/${p.id}`} class="group block">
+        <a
+          href={`/projects/${p.id}`}
+          class="project-card group block"
+          data-status={p.data.status}
+          data-tech={p.data.tech.join(',')}
+        >
           {p.data.cover ? (
             <img
               src={p.data.cover}
@@ -106,6 +96,7 @@ const tabs = [
             </div>
             <h2 class="mt-2 font-semibold group-hover:text-[var(--color-accent)] transition-colors">
               {p.data.title}
+              <span aria-hidden="true" class="inline-block ml-1 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all">→</span>
             </h2>
             <p class="mt-1 text-sm text-[var(--color-muted)]">{p.data.description}</p>
             {p.data.tech.length > 0 && (
@@ -121,7 +112,90 @@ const tabs = [
     }
   </div>
 
-  {sorted.length === 0 && (
-    <p class="mt-10 text-[var(--color-muted)]">这个分类下还没有项目。</p>
-  )}
+  <!-- 空态：默认隐藏，由客户端脚本按筛选结果显示 -->
+  <div id="empty-filter" class="hidden">
+    <EmptyState
+      icon="🔍"
+      title="没有符合筛选条件的项目"
+      description="换个筛选条件试试，或者看看全部项目。"
+      actionHref="/projects"
+      actionLabel="清除筛选"
+    />
+  </div>
+  <div id="empty-none" class="hidden">
+    <EmptyState
+      icon="📭"
+      title="还没有项目"
+      description="做过的项目会陈列在这里，包括灵感和落地过程。"
+      actionHref="/notes"
+      actionLabel="看看一闪念"
+    />
+  </div>
 </BaseLayout>
+
+<script is:inline>
+  // 客户端筛选（P1-7）：静态托管下 URL query 在构建时不可用，改为客户端解析过滤
+  (function () {
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.project-card'));
+    var emptyFilter = document.getElementById('empty-filter');
+    var emptyNone = document.getElementById('empty-none');
+    var statusTabs = Array.prototype.slice.call(document.querySelectorAll('[data-status-tab]'));
+    var techTabs = Array.prototype.slice.call(document.querySelectorAll('[data-tech-tab]'));
+    if (!cards.length) return;
+
+    var ACTIVE_STATUS = 'bg-[var(--color-accent)] text-[var(--color-accent-fg)] px-3 py-1.5 rounded-full transition-colors';
+    var IDLE_STATUS = 'border border-[var(--color-border)] hover:bg-[var(--color-border)] px-3 py-1.5 rounded-full transition-colors';
+    var ACTIVE_TECH = 'bg-[var(--color-accent)] text-[var(--color-accent-fg)] px-2 py-1 rounded-full transition-colors';
+    var IDLE_TECH = 'text-[var(--color-muted)] hover:text-[var(--color-accent)] px-2 py-1 rounded-full transition-colors';
+
+    function apply() {
+      var params = new URLSearchParams(location.search);
+      var status = params.get('status') || 'all';
+      var tech = params.get('tech') || 'all';
+      var visible = 0;
+      cards.forEach(function (card) {
+        var ok =
+          (status === 'all' || card.dataset.status === status) &&
+          (tech === 'all' || card.dataset.tech.split(',').indexOf(tech) >= 0);
+        card.style.display = ok ? '' : 'none';
+        if (ok) visible++;
+      });
+      statusTabs.forEach(function (a) {
+        a.className = a.dataset.statusTab === status ? ACTIVE_STATUS : IDLE_STATUS;
+      });
+      techTabs.forEach(function (a) {
+        a.className = a.dataset.techTab === tech ? ACTIVE_TECH : IDLE_TECH;
+      });
+      var hasFilter = status !== 'all' || tech !== 'all';
+      var showEmpty = emptyFilter && emptyNone ? (visible === 0) : false;
+      if (showEmpty) {
+        emptyFilter.style.display = hasFilter ? 'block' : 'none';
+        emptyNone.style.display = hasFilter ? 'none' : 'block';
+      } else {
+        if (emptyFilter) emptyFilter.style.display = 'none';
+        if (emptyNone) emptyNone.style.display = 'none';
+      }
+    }
+
+    // 点击筛选链接：合并保留另一维参数后 pushState，无刷新过滤
+    document.querySelectorAll('[data-filter-link]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var cur = new URLSearchParams(location.search);
+        var next = new URLSearchParams((a.getAttribute('href') || '').split('?')[1] || '');
+        if (a.hasAttribute('data-status-tab')) {
+          if (cur.has('tech')) next.set('tech', cur.get('tech'));
+          else next.delete('tech');
+        }
+        if (a.hasAttribute('data-tech-tab')) {
+          if (cur.has('status')) next.set('status', cur.get('status'));
+          else next.delete('status');
+        }
+        history.pushState({}, '', '?' + next.toString());
+        apply();
+      });
+    });
+    window.addEventListener('popstate', apply);
+    apply();
+  })();
+</script>

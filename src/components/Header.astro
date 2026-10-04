@@ -112,9 +112,14 @@ const path = Astro.url.pathname;
       return;
     }
 
+    // 标记暗色切换过渡（global.css 据此隔离：圆形扩散 vs 页面切换动画）
+    // 防御：清除上次可能残留的标记，避免 :not(.theme-switch) 规则失效
+    document.documentElement.classList.remove('theme-switch');
+    document.documentElement.classList.add('theme-switch');
+
     const transition = document.startViewTransition(apply);
     await transition.ready;
-    document.documentElement.animate(
+    const anim = document.documentElement.animate(
       {
         clipPath: [
           `circle(0px at ${x}px ${y}px)`,
@@ -127,6 +132,11 @@ const path = Astro.url.pathname;
         pseudoElement: '::view-transition-new(root)',
       },
     );
+    // 动画完成后清理标记；transition.finished 可能挂起，不依赖它
+    // （WAAPI 动画自身的 finished 只等 500ms 动画播放完，可靠）
+    const cleanup = () => document.documentElement.classList.remove('theme-switch');
+    anim.finished.then(cleanup).catch(cleanup);
+    setTimeout(cleanup, 700); // 兜底：动画时长 + 余量后强制清理
   });
 
   // 移动端菜单

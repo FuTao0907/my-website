@@ -1,0 +1,29 @@
+---
+/**
+ * 全局空状态组件（P1-4，v1.2）
+ * 用于列表/筛选无结果、无内容时的统一展示：图标 + 标题 + 说明 + 可选操作
+ */
+interface Props {
+  icon?: string;
+  title: string;
+  description?: string;
+  actionHref?: string;
+  actionLabel?: string;
+}
+
+const { icon = '📭', title, description, actionHref, actionLabel = '去看看' } = Astro.props;
+---
+
+<div class="mt-10 py-16 px-6 text-center rounded-xl border border-dashed border-[var(--color-border)]">
+  <div class="text-4xl" aria-hidden="true">{icon}</div>
+  <p class="mt-4 font-medium">{title}</p>
+  {description && <p class="mt-1 text-sm text-[var(--color-muted)]">{description}</p>}
+  {actionHref && (
+    <a
+      href={actionHref}
+      class="mt-6 inline-flex items-center px-5 py-2.5 rounded-md border border-[var(--color-border)] text-sm font-medium hover:bg-[var(--color-border)] hover:border-[var(--color-accent)] transition-colors"
+    >
+      {actionLabel}
+    </a>
+  )}
+</div>

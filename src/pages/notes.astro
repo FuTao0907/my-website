@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import EmptyState from '@/components/EmptyState.astro';
 import { render } from 'astro:content';
 import { getCollection } from 'astro:content';
 
@@ -49,7 +50,15 @@ function formatDate(d: Date): string {
     }
   </div>
 
-  {rendered.length === 0 && (
-    <p class="mt-10 text-[var(--color-muted)]">还没有一闪念，等我想到什么就记下来。</p>
-  )}
+  {
+    rendered.length === 0 && (
+      <EmptyState
+        icon="💡"
+        title="还没有一闪念"
+        description="短想法、灵感、碎碎念会随手记在这里。"
+        actionHref="/"
+        actionLabel="回首页"
+      />
+    )
+  }
 </BaseLayout>
