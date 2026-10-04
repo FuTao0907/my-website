@@ -48,7 +48,8 @@ yarn preview
 
 | 文档 | 说明 |
 |------|------|
-| [`docs/prd/v1.0/PRODUCT_PRD.md`](./docs/prd/v1.0/PRODUCT_PRD.md) | v1.0 产品需求文档（已冻结） |
+| [`docs/prd/v1.1/PRODUCT_PRD.md`](./docs/prd/v1.1/PRODUCT_PRD.md) | v1.1 产品需求文档（最新版本） |
+| [`docs/UI_SPEC.md`](./docs/UI_SPEC.md) | UI 规范（设计 token、布局、组件、动效、交互，可 1:1 复刻） |
 | [`docs/DEVELOPMENT.md`](./docs/DEVELOPMENT.md) | 开发规范（版本号、问题记录、工程约定） |
 | [`docs/ISSUES_LOG.md`](./docs/ISSUES_LOG.md) | 问题台账（所有踩过的坑和解决方案） |
 | [`docs/CHANGELOG.md`](./docs/CHANGELOG.md) | 版本变更记录 |
@@ -59,5 +60,5 @@ yarn preview
 
 ## 版本号
 
-遵循 SemVer：`MAJOR.MINOR.PATCH`，当前 **0.0.1**（开发中）。
+遵循 SemVer：`MAJOR.MINOR.PATCH`，当前 **1.1.0**（v1.0/v1.1 已上线）。
 详见 [`docs/DEVELOPMENT.md`](./docs/DEVELOPMENT.md)。
