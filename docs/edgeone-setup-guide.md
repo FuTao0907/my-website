@@ -1,111 +1,98 @@
-# EdgeOne Makers + DNSPod 国内加速配置指南
+# EdgeOne + DNSPod 国内加速配置指南（最终版）
 
-> 目标：国内用户访问走腾讯云 EdgeOne Makers（免费），国外用户走 Cloudflare Pages，解决 pages.dev 国内访问慢的问题。
+> 目标：国内用户访问 `philia093.ink` 走腾讯云 EdgeOne（免费、国内节点快），解决 pages.dev 国内访问慢的问题。
+> 最终架构：**全量解析到 EdgeOne → 回源 Cloudflare Pages**（不再做国外/国内分流，原因见 ISSUE-014）。
+
+---
+
+## 最终架构
+
+```
+用户访问 philia093.ink
+  └─ DNSPod：@ CNAME → philia093.ink.eo.dnse3.com（EdgeOne，全线路统一）
+        └─ EdgeOne 加速域名 philia093.ink（香港/亚太节点，全球加速）
+              └─ 回源 Host = anges-website.pages.dev（Cloudflare Pages）
+```
+
+- DNS 权威解析 + 线路：**DNSPod**（腾讯云）
+- 加速 + HTTPS + 边缘防护：**EdgeOne**（腾讯云，免费套餐永久有效，免费证书自动续期）
+- 源站托管：**Cloudflare Pages**（免费）
 
 ---
 
 ## 前置条件
 
-1. 已有域名（如果没有，需要先买一个）
-2. 域名 DNS 托管在 DNSPod（腾讯云）
-3. Cloudflare Pages 项目已部署完成（当前：anges-website.pages.dev）
+1. 域名（当前：`philia093.ink`，注册在腾讯云）
+2. 域名 DNS 托管在 DNSPod（NS: `eileen.dnspod.net` / `present.dnspod.net`）
+3. Cloudflare Pages 项目已部署（`anges-website.pages.dev`，GitHub 自动部署）
 
 ---
 
-## 第一步：注册 EdgeOne Makers
+## 关键配置（已完成的最终形态）
 
-1. 打开 https://edgeone.ai/zh/makers
-2. 用微信/手机号登录
-3. 点击"添加站点"
-4. 输入你的域名（比如 `anges.dev`）
-5. 选择"静态网站托管" → "导入已有站点"
-6. 源站地址填：`anges-website.pages.dev`
-7. 完成添加
+### EdgeOne 站点
 
-**注意：** EdgeOne Makers 是免费套餐，每月有流量额度，个人站够用。
+- 站点：`philia093.ink`（zone-3vrzc7il4lar，免费套餐，CNAME 接入）
+- EdgeOne 分配 CNAME：`philia093.ink.eo.dnse3.com`
+- 域名所有权验证：DNSPod 添加 TXT `edgeonereclaim`（已通过，Activated）
+- 源站设置（Origin settings）：
+  - 源站地址：`anges-website.pages.dev`
+  - **源主机头（Host Header）：必须选"使用源域名"**（= anges-website.pages.dev）
+    - ⚠️ 若用默认的"使用加速域名称"，Cloudflare Pages 会返回 409（见 ISSUE-013）
+- HTTPS：免费证书（Let's Encrypt，90 天自动续期），申请验证需等 DNS 全量指向 EdgeOne（见 ISSUE-014）
 
----
+### DNSPod 记录（合并后最终 2 条）
 
-## 第二步：配置 EdgeOne 加速
+| 主机记录 | 类型 | 记录值 | 线路 |
+|---------|------|--------|------|
+| @ | CNAME | philia093.ink.eo.dnse3.com | 默认 |
+| edgeonereclaim | TXT | reclaim-... | 默认 |
 
-1. 在 EdgeOne 控制台进入你的站点
-2. 左侧菜单 → "加速" → "性能优化"
-   - 开启：智能压缩、图片优化、TCP 快速打开
-3. 左侧菜单 → "安全" → "HTTPS"
-   - 开启：强制 HTTPS
-4. 等待 EdgeOne 分配 CNAME 地址（类似 `anges.dev.edgeone.app`）
-
----
-
-## 第三步：DNSPod 智能分流配置
-
-### 3.1 把域名 DNS 迁移到 DNSPod
-
-1. 登录 DNSPod（https://dnspod.com）
-2. 添加你的域名
-3. 按照提示修改域名注册商处的 DNS 服务器，改成 DNSPod 的
-4. 等待 DNS 生效（几分钟到几小时）
-
-### 3.2 配置智能解析（国内走 EdgeOne，国外走 CF Pages）
-
-在 DNSPod 控制台添加两条记录：
-
-| 记录类型 | 主机记录 | 解析线路 | 记录值 |
-|---------|---------|---------|--------|
-| CNAME | @ | 联通/移动/电信（国内） | 你在 EdgeOne 分配的 CNAME（`xxx.edgeone.app`） |
-| CNAME | @ | 默认/国外 | `anges-website.pages.dev` |
-
-**说明：**
-- 国内用户（联通/移动/电信）→ 走 EdgeOne，访问快
-- 国外用户 → 走 Cloudflare Pages
-
-### 3.3 配置 www 子域名（可选）
-
-如果需要 `www.你的域名` 也能访问，同样添加两条 www 的 CNAME 记录。
+> 不需要 www 记录（站点未启用 www 子域）；所有线路统一走 EdgeOne。
 
 ---
 
-## 第四步：Cloudflare Pages 绑定自定义域名
+## 踩过的坑（务必避免重犯）
 
-1. 登录 Cloudflare Pages 控制台
-2. 进入 `anges-website` 项目
-3. 左侧 → "自定义域名" → "添加自定义域"
-4. 输入你的域名
-5. 按照提示验证（因为 DNS 在 DNSPod，需要加 TXT 记录验证）
+1. **回源 Host 不匹配 → 409**（ISSUE-013）：EdgeOne 回源 Cloudflare Pages 这类"只认绑定域名"的源站，源主机头必须设为源站域名，不能用加速域名。
+2. **分线路解析 → 免费证书验证失败**（ISSUE-014）：Let's Encrypt 验证服务器在北美，DNSPod 分线路时"默认"线路必须也指向 EdgeOne，否则 CA 访问不到验证文件。最终干脆全量统一指向 EdgeOne，不做分流。
 
 ---
 
-## 第五步：验证效果
+## 验证方法
 
-1. 打开 https://tool.chinaz.com/dns 或 https://www.itdog.cn/ping
-2. 输入你的域名
-3. 查看国内/国外解析结果：
-   - 国内节点 → 应该解析到 EdgeOne 的 IP
-   - 国外节点 → 应该解析到 Cloudflare 的 IP
-4. 实际访问测试国内打开速度
+```powershell
+# 1. DNS 解析链路
+Resolve-DnsName philia093.ink          # 应显示 CNAME → philia093.ink.eo.dnse3.com
+Resolve-DnsName philia093.ink.eo.dnse3.com  # 应解析出 EdgeOne IP（43.x.x.x）
+
+# 2. HTTP 访问
+curl.exe -s -D - -o NUL http://philia093.ink  # 200 + EO-* 响应头 = 正常
+
+# 3. HTTPS（证书签发后）
+curl.exe -s -o NUL -w "%{http_code}" https://philia093.ink  # 200
+```
+
+在线工具：https://www.itdog.cn/ping 查看各地连通性。
 
 ---
 
-## 常见问题
+## 后续扩展（子域名加新站）
 
-### Q: EdgeOne Makers 和付费版有什么区别？
-A: 免费版有流量和请求数限制，个人小站完全够用。超出了再考虑升级。
+1. EdgeOne 控制台 → 域名服务 → 添加子域名（如 `blog.philia093.ink`），独立配置源站
+2. EdgeOne 分配该子域专属 CNAME
+3. DNSPod 加一条：`blog` CNAME → 该子域 CNAME
+4. 等验证 + 免费证书自动签发
 
-### Q: 为什么不直接把 DNS 全托管到 Cloudflare？
-A: Cloudflare 的免费版在国内访问不稳定（被墙/限速），所以用 DNSPod 智能分流，国内走腾讯云 EdgeOne，国外走 Cloudflare。
-
-### Q: 配置完了还是国内慢？
-A: 检查：
-1. EdgeOne 是否真的加速了（看响应头有没有 `EO-*` 开头的头）
-2. DNSPod 的解析线路是不是配置正确
-3. DNS 缓存还没生效（等一会儿）
+免费套餐支持 200 个子域名，每个子域独立证书、独立源站，主域不受影响。
 
 ---
 
 ## 当前进度
-- [x] Cloudflare Pages 部署完成
-- [ ] 买域名
-- [ ] EdgeOne Makers 添加站点
-- [ ] DNSPod 智能分流配置
-- [ ] Cloudflare Pages 绑定自定义域名
-- [ ] 验证国内访问速度
+
+- [x] Cloudflare Pages 部署完成（anges-website.pages.dev）
+- [x] 域名 philia093.ink（腾讯云注册 + DNSPod 托管）
+- [x] EdgeOne 添加站点 + 域名验证通过（Activated）
+- [x] 源站设置（源站 + 回源 Host = 源域名）
+- [x] DNSPod 合并为全量 EdgeOne CNAME（2 条记录）
+- [ ] EdgeOne 免费证书签发完成 → 验证 https://philia093.ink
