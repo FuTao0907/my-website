@@ -2,6 +2,8 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { about as data } from '@/content/about';
 import { getProjects } from '@/utils/projects';
+import { Image } from 'astro:assets';
+import avatar from '@/assets/avatar.jpg';
 
 const projects = await getProjects();
 const featuredProjects = projects.filter((p) => p.data.featured).slice(0, 3);
@@ -10,9 +12,11 @@ const featuredProjects = projects.filter((p) => p.data.featured).slice(0, 3);
 <BaseLayout title="关于我" description={`${data.name} · ${data.role}`}>
   <section class="py-8">
     <div class="flex flex-col md:flex-row gap-8 items-start">
-      <img
-        src="/avatar.jpg"
+      <Image
+        src={avatar}
         alt={data.name}
+        width={96}
+        height={96}
         class="w-24 h-24 rounded-full object-cover border-2 border-[var(--color-border)]"
       />
       <div>

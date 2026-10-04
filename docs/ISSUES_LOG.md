@@ -85,6 +85,26 @@
 - **状态**：已解决（复测 a11y 100）
 - **备注**：**accent 背景上的文字一律用 `--color-accent-fg`，禁止写死 `text-white`**。已记入 docs/UI_SPEC.md §2.1 对比度约束
 
+### ISSUE-009：OG 图片方案切换——astro-og-canvas 与 Astro 7 不兼容
+- **日期**：2026-10-04
+- **现象**：`yarn build` 报 `MISSING_EXPORT` / `Astro is not defined`（astro-og-canvas@0.13.2）；尝试 `generateOpenGraphImage`、`OGImageRoute` 三种写法均失败
+- **根因**：astro-og-canvas 0.13.x 内部依赖的 API 在 Astro 7 中已移除/变更，插件导出在构建期解析不到
+- **解决方案**：改用 `@resvg/resvg-js`（SVG → PNG）：新建 `src/pages/og/[slug].png.ts` endpoint，构建期为每篇公开博客/项目 + default 生成 1200x630 PNG；中文字体用仓库内置 `src/assets/NotoSansSC-Regular.woff2`（@fontsource 子集，1.08MB），resvg 用 `font.fontFiles` 显式加载
+- **状态**：已解决（构建生成 4 张 PNG，博客/项目详情页 og:image/twitter:image 正确输出）
+- **备注**：
+  - `.png.ts` endpoint 是**纯 TS 模块，禁止写 `---` frontmatter**（会触发 vite-transform Unexpected token）
+  - 字体路径**不能用 `import.meta.url`**（编译后指向 dist，会 ENOENT），改用 `resolve(process.cwd(), 'src/assets/...')`（构建时 cwd 恒为项目根，Cloudflare 环境一致）
+  - `astro-og-canvas` 依赖已从 package.json 移除
+  - 标题换行按像素宽度估算（中文/全角 60px、英文 32px，对应 60px 字号），避免"Hello World：这个网站诞生了"这种中英混排被按字符数误断行
+
+### ISSUE-010：构建警告——glob-loader 提示 notes 目录无内容
+- **日期**：2026-10-04
+- **现象**：`yarn build` 有两条 `[WARN] [glob-loader] No files found matching "**/*.md" in directory "src\content\notes"` 和 `[content] The collection "notes" does not exist or is empty`
+- **根因**：一闪念（notes）collection 已在 content.config.ts 声明、notes 页面已上线，但 `src/content/notes/` 还没有任何笔记内容，glob-loader 对空目录发出警告
+- **解决方案**：无需改代码——这是"内容为空"的良性警告。notes 页面已有空状态 UI（"还没有一闪念，等我想到什么就记下来"）。等用户写入第一篇笔记后警告自动消失
+- **状态**：已知预期行为（不阻塞构建）
+- **备注**：以后再新建 collection 时，若目录暂时无内容，此警告属正常；上线前确认页面有空状态兜底即可
+
 <!--
 示例（不要删，只作模板参考）：
 

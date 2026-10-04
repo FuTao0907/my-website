@@ -28,7 +28,7 @@ const related = all
   .slice(0, 3);
 ---
 
-<BaseLayout title={post.data.title} description={post.data.summary}>
+<BaseLayout title={post.data.title} description={post.data.summary} ogImage={`/og/${post.id}.png`}>
   <!-- 阅读进度条 -->
   <div id="reading-progress" class="fixed top-0 left-0 h-0.5 bg-[var(--color-accent)] z-50 transition-[width] duration-100" style="width: 0%"></div>
 

@@ -22,7 +22,7 @@ const related = allProjects
   .slice(0, 3);
 ---
 
-<BaseLayout title={project.data.title} description={project.data.description}>
+<BaseLayout title={project.data.title} description={project.data.description} ogImage={`/og/${project.id}.png`}>
   <article>
     <!-- 面包屑 -->
     <nav class="text-sm text-[var(--color-muted)] mb-6">
