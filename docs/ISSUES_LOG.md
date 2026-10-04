@@ -148,6 +148,14 @@
 - **状态**：已解决（浏览器实测 `?tech=zzz` → 空态+清除筛选；点"进行中" → URL 合并为 `?status=active&tech=zzz`）
 - **备注**：**以后所有依赖 URL query 的筛选/分页，一律客户端实现，不要在 SSG 构建时读 searchParams 过滤**；涉及页面：projects/index、blog/index、collections/{books,links,novels,music,videos}/index
 
+### ISSUE-016：页面切换中间帧新旧内容叠加（View Transitions 旧快照未让位）
+- **日期**：2026-10-04
+- **现象**：线上（philia093.ink）切换页面时，过渡中间帧出现"旧页面内容半透明叠加在新页面内容上"（如首页 Hero/三栏叠在项目页内容上，形成重叠文字）。本地 dev 不明显，线上复现
+- **根因**：`html:not(.theme-switch)::view-transition-old(main-content) { animation: none }` —— 给旧内容快照设了 `animation: none`，旧快照在整段 400ms 过渡里**保持原位且完全不消失**；新内容从 `translateY(8px) + opacity:0` 淡入覆盖其上，过渡中段新旧两页内容同时可见 → 叠加
+- **解决方案**：旧快照改为立即让位：`animation: route-leave 1ms both`（route-leave keyframe 结束态为 `opacity:0`，1ms 内完成并保持）。过渡变成"旧内容瞬间消失 → 新内容 400ms 淡入上移"，不再叠加
+- **状态**：已解决（本地 preview 实测：手动 startViewTransition 替换 main 后页面干净无残留；真实导航切换无叠加）
+- **备注**：**View Transitions 里"让旧快照让位"必须用一个 1ms 结束态动画（`Xms both` 到 opacity:0），不能写 `animation: none`**——none 会让旧快照整个过渡期钉在原位；新快照动画时长可正常配置
+
 ### ISSUE-001：Astro 部署到 Cloudflare Pages 后图片不显示
 - **日期**：2026-09-21
 - **现象**：构建成功但线上页面图片 404

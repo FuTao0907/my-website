@@ -4,6 +4,13 @@
 
 ---
 
+## [1.2.1] - 2026-10-04
+
+### 🐛 修复
+- **页面切换中间帧新旧内容叠加**（ISSUE-016）：`::view-transition-old(main-content)` 从 `animation: none` 改为 `route-leave 1ms both`，旧内容快照在过渡开始时立即让位（1ms 内淡出），不再与淡入的新内容叠加成重叠文字
+
+---
+
 ## [1.2.0] - 2026-10-04
 
 > 体验成熟化：状态完备 + 加载反馈 + 交互闭环。PRD：`docs/prd/v1.2/PRODUCT_PRD.md`

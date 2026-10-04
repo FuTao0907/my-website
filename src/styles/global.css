@@ -121,12 +121,12 @@ html:not(.theme-switch)::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
-/* 仅 main 内容区独立过渡：旧内容直接让位，新内容平滑淡入上移（400ms，避免闪动） */
+/* 仅 main 内容区独立过渡：旧内容立即让位（1ms 结束态 opacity:0），新内容平滑淡入上移（400ms，避免闪动与叠加） */
 main#main-content {
   view-transition-name: main-content;
 }
 html:not(.theme-switch)::view-transition-old(main-content) {
-  animation: none;
+  animation: route-leave 1ms both;
 }
 html:not(.theme-switch)::view-transition-new(main-content) {
   animation: route-enter 400ms ease-out both;
