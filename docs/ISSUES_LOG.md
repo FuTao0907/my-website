@@ -105,6 +105,25 @@
 - **状态**：已知预期行为（不阻塞构建）
 - **备注**：以后再新建 collection 时，若目录暂时无内容，此警告属正常；上线前确认页面有空状态兜底即可
 
+### ISSUE-011：astro check 与 TypeScript 7 不兼容（需要 6.x）
+- **日期**：2026-10-04
+- **现象**：`yarn astro check` 报 `The TypeScript module loaded (found 7.0.2) does not expose the programmatic API that astro check relies on`
+- **根因**：TypeScript 7（原生编译器）不再提供 TS 6.x 的 programmatic API，而 astro check / @astrojs/language-server 依赖该 API（官方 roadmap 讨论 #1321 跟踪支持）
+- **解决方案**：devDependencies 的 `typescript` 降到 `6`（当前 6.0.3）。@astrojs/check 需一并安装（`yarn add -D @astrojs/check typescript@6`）
+- **状态**：已解决（astro check 0 errors / 0 warnings / 0 hints）
+- **备注**：**不要升级 typescript 到 7.x**，直到 astro check 官方支持；装依赖时国内网络需用 `--registry https://registry.npmmirror.com`（registry.yarnpkg.com 直连被阻断，报 ERR_TLS_CERT_ALTNAME_INVALID）
+
+### ISSUE-012：zod v4 迁移——astro:content 的 z 已弃用、z.string().url() 弃用
+- **日期**：2026-10-04
+- **现象**：astro check 报大量 `ts(6385): 'z' is deprecated`（从 `astro:content` 或 `astro:schema` 导入 z 均报）
+- **根因**：Astro 7 内部使用 zod v4（`astro/zod` → `zod/v4`），`astro:content` / `astro:schema` 的 z 导出是 v3 兼容层（标记 deprecated）；zod v4 同时弃用了 `z.string().url()`（改为独立 `z.url()`）
+- **解决方案**：
+  - `zod`（^4.6.5）加入 dependencies（作为直接依赖，此前是 astro 的传递依赖）
+  - `src/content.config.ts`：`import { z } from 'zod'`（顶层导出 zod v4，无 deprecated 标记）
+  - `z.string().url().optional()` 全部改为 `z.url().optional()`（projects 的 demo/repo、收藏的 link 共 3 处）
+- **状态**：已解决（astro check 0 hints）
+- **备注**：zod v4 的 string format 校验（url/email/uuid 等）都改成了独立函数，`.string().xxx()` 写法以后直接写 `z.xxx()`
+
 <!--
 示例（不要删，只作模板参考）：
 
