@@ -60,5 +60,5 @@ yarn preview
 
 ## 版本号
 
-遵循 SemVer：`MAJOR.MINOR.PATCH`，当前 **1.1.0**（v1.0/v1.1 已上线）。
+遵循 SemVer：`MAJOR.MINOR.PATCH`，当前 **1.1.1**（v1.0/v1.1 已上线，EdgeOne 国内加速已接入）。
 详见 [`docs/DEVELOPMENT.md`](./docs/DEVELOPMENT.md)。

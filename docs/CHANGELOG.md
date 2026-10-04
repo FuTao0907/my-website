@@ -4,6 +4,28 @@
 
 ---
 
+## [1.1.1] - 2026-10-04
+
+### 🐛 修复
+- **暗色模式按钮对比度**：accent 按钮文字在暗色下白字对比度不足（2.54:1），新增设计 token `--color-accent-fg`，全站 11 处替换（a11y 100）
+- **站点 URL 拼写**：`https://anges.pages.dev` → `https://anges-website.pages.dev`（修复 sitemap/canonical/og:url/JSON-LD 错误）
+- **收藏统计页笔误**：`stats.avgRating` → `stats.books.avgRating`（运行时错误）
+- **TypeScript 版本兼容**：TS 7 不提供 `astro check` 依赖的 API，锁定 typescript@6
+- **zod v4 迁移**：`z.string().url()` 弃用写法改为 `z.url()`，zod 设为直接依赖
+
+### ✨ 优化
+- **OG 图片自动生成**：构建期生成 1200×630 PNG（深色底 + accent 竖条 + 中文标题自动换行），博客/项目详情页自动带 og:image
+- **图片优化 astro:assets**：头像迁入 src/assets，构建自动生成 WebP + 双尺寸
+- **构建弃用警告清理**：markdown remark/rehype 插件迁移到 `markdown.processor: unified()`
+- **类型检查全绿**：`astro check` 0 errors / 0 warnings / 0 hints（34 files）
+- **依赖治理**：移除 astro-og-canvas（与 Astro 7 不兼容），@astrojs/check 加入 devDependencies
+
+### 🚀 部署
+- **EdgeOne 国内加速接入**：`philia093.ink` 全量解析到 EdgeOne（DNSPod 合并为 2 条记录），回源 Host 设为源域名，免费证书已签发（TrustAsia DV，自动续期）
+- **文档体系完善**：UI_SPEC.md（可 1:1 复刻）、edgeone-setup-guide.md（最终架构版）、ISSUES_LOG 更新至 ISSUE-014
+
+---
+
 ## [1.1.0] - 2026-09-21
 
 ### ✨ 新功能
