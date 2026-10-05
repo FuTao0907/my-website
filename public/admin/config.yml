@@ -1,11 +1,13 @@
 # Ange's website · 内容管理后台配置（Decap CMS）
 # 字段与 src/content.config.ts 的 zod schema 逐一对齐，编辑保存后构建不炸
+# 认证方式：auth_type: implicit（GitHub PAT 登录，绕开 OAuth 授权风控）
+# 如需切回 OAuth：删除 auth_type/auth_scope，恢复 base_url/auth_endpoint（回调已配 philia093.ink/api/auth/callback）
 backend:
   name: github
   repo: FuTao0907/my-website
   branch: main
-  base_url: https://philia093.ink
-  auth_endpoint: /api/auth
+  auth_type: implicit
+  auth_scope: repo
 
 # 图片上传目录（提交到仓库，构建后 dist/uploads）
 media_folder: "public/uploads"
