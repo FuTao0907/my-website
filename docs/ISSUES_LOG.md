@@ -129,7 +129,7 @@
 - **现象**：`http://philia093.ink` 访问返回 `409 Conflict`（响应头 Server: cloudflare / CF-RAY，来自 Cloudflare Pages），EdgeOne 加速配置看着都正常
 - **根因**：EdgeOne 源站设置的"源主机头（Host Header）"默认是**使用加速域名称**（philia093.ink），回源时带着这个 Host 打到 Cloudflare Pages；Pages 只认它绑定过的域名，不认 philia093.ink → 409
 - **解决方案**：EdgeOne 源站设置 → 源主机头 改为**使用源域名**（anges-website.pages.dev），回源时 Pages 就正常响应
-- **状态**：已解决（等待验证）
+- **状态**：已解决（2026-10-05 复核：web_fetch 第三方服务器抓取 https://philia093.ink 返回 200 正常内容，HTTPS 握手成功；pages.dev 源站直连 200；本机 curl 到主域偶发超时为本机→EdgeOne 节点网络抖动，非线上问题）
 - **备注**：EdgeOne 回源 Cloudflare Pages 这类"只认绑定域名"的源站时，**回源 Host 必须显式设为源站域名**；DNS 探测方法：`Resolve-DnsName philia093.ink` 看 CNAME 链、curl 看响应头是否含 EO-* 与 CF-RAY
 
 ### ISSUE-014：DNSPod 分线路解析导致 EdgeOne 免费证书自动验证失败
@@ -137,7 +137,7 @@
 - **现象**：EdgeOne 申请免费证书报 `FailedOperation.ApplyCertAutoVerificationFailed`（CheckFreeCertificateVerification），path 指向站点 DNS 记录页
 - **根因**：EdgeOne 免费证书由 Let's Encrypt 颁发，**CA 验证服务器主要在中国大陆以外（北美）**；DNSPod 分线路解析时"默认"线路指向了 `anges-website.pages.dev`（非 EdgeOne），CA 走默认线路访问不到 EdgeOne 的验证文件 → 验证失败（官方文档明确：分线路/分区域解析会导致此失败）
 - **解决方案**：把 DNSPod 所有线路统一指向 EdgeOne CNAME（`philia093.ink.eo.dnse3.com`）——默认线路也从 pages.dev 改为 EdgeOne，并删除电信/联通/移动三条值相同的分线路记录，合并为一条默认 CNAME。等 TTL（600s）生效后重新申请证书
-- **状态**：修复中（DNS 合并后等待重新验证）
+- **状态**：已解决（2026-10-05 复核：证书已签发生效——https://philia093.ink 握手成功，web_fetch 第三方抓取 200 正常；EdgeOne 免费证书 TrustAsia DV 自动续期，CHANGELOG v1.1.1 已记录签发）
 - **备注**：EdgeOne 免费套餐全球加速且流量不计量，**没必要保留"国外直连 pages.dev"的默认线路**，全量走 EdgeOne 反而避免 CA 验证和源站 409 两类问题；CNAME 接入 + 分线路的组合对免费证书不友好
 
 ### ISSUE-015：静态托管下 URL query 筛选完全不生效（v1.0 遗留）
