@@ -1,0 +1,189 @@
+# Ange's website · 内容管理后台配置（Decap CMS）
+# 字段与 src/content.config.ts 的 zod schema 逐一对齐，编辑保存后构建不炸
+backend:
+  name: github
+  repo: FuTao0907/my-website
+  branch: main
+  base_url: https://philia093.ink
+  auth_endpoint: /api/auth
+
+# 图片上传目录（提交到仓库，构建后 dist/uploads）
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+collections:
+  # ===== 博客 =====
+  - name: blog
+    label: 博客
+    folder: src/content/blog
+    create: true
+    delete: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - { label: 发布日期, name: published, widget: datetime }
+      - { label: 更新日期, name: updated, widget: datetime, required: false }
+      - { label: 摘要, name: summary, widget: text, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - { label: 分类, name: category, widget: select, options: [tech, life], default: tech }
+      - { label: 封面图, name: cover, widget: image, required: false }
+      - { label: 草稿（仅本地可见）, name: draft, widget: boolean, default: false }
+      - { label: 公开可见, name: visible, widget: boolean, default: true }
+      - { label: 正文, name: body, widget: markdown }
+
+  # ===== 项目 =====
+  - name: projects
+    label: 项目
+    folder: src/content/projects
+    create: true
+    delete: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - { label: 状态, name: status, widget: select, options: [active, completed, archived], default: active }
+      - { label: 简介（≤120 字）, name: description, widget: text }
+      - { label: 封面图, name: cover, widget: image, required: false }
+      - { label: 演示链接, name: demo, widget: string, required: false }
+      - { label: 仓库链接, name: repo, widget: string, required: false }
+      - { label: 技术栈, name: tech, widget: list, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - { label: 开始日期, name: startDate, widget: datetime }
+      - { label: 结束日期, name: endDate, widget: datetime, required: false }
+      - { label: 首页精选, name: featured, widget: boolean, default: false }
+      - { label: 草稿, name: draft, widget: boolean, default: false }
+      - { label: 正文, name: body, widget: markdown }
+
+  # ===== 收藏 · 书籍 =====
+  - name: books
+    label: 收藏 · 书籍
+    folder: src/content/collections/books
+    create: true
+    delete: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - { label: 作者, name: author, widget: string, required: false }
+      - { label: 评分（1-5）, name: rating, widget: number, value_type: int, min: 1, max: 5, required: false }
+      - { label: 状态, name: status, widget: select, options: [wishlist, ongoing, finished], default: ongoing }
+      - { label: 链接, name: link, widget: string, required: false }
+      - { label: 封面图, name: cover, widget: image, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - { label: 看完日期, name: finishedDate, widget: datetime, required: false }
+      - { label: 草稿, name: draft, widget: boolean, default: false }
+      - { label: 正文, name: body, widget: markdown }
+      - { label: ISBN, name: isbn, widget: string, required: false }
+      - { label: 会重读, name: reread, widget: boolean, default: false }
+
+  # ===== 收藏 · 音乐 =====
+  - name: music
+    label: 收藏 · 音乐
+    folder: src/content/collections/music
+    create: true
+    delete: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    fields:
+      - { label: 标题（歌名）, name: title, widget: string }
+      - { label: 作者, name: author, widget: string, required: false }
+      - { label: 评分（1-5）, name: rating, widget: number, value_type: int, min: 1, max: 5, required: false }
+      - { label: 状态, name: status, widget: select, options: [wishlist, ongoing, finished], default: ongoing }
+      - { label: 链接, name: link, widget: string, required: false }
+      - { label: 封面图, name: cover, widget: image, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - { label: 听完日期, name: finishedDate, widget: datetime, required: false }
+      - { label: 草稿, name: draft, widget: boolean, default: false }
+      - { label: 正文, name: body, widget: markdown }
+      - { label: 歌手, name: artist, widget: string }
+      - { label: 专辑, name: album, widget: string, required: false }
+      - { label: 风格, name: genre, widget: string, required: false }
+
+  # ===== 收藏 · 网文 =====
+  - name: novels
+    label: 收藏 · 网文
+    folder: src/content/collections/novels
+    create: true
+    delete: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - { label: 作者, name: author, widget: string, required: false }
+      - { label: 评分（1-5）, name: rating, widget: number, value_type: int, min: 1, max: 5, required: false }
+      - { label: 状态, name: status, widget: select, options: [wishlist, ongoing, finished], default: ongoing }
+      - { label: 链接, name: link, widget: string, required: false }
+      - { label: 封面图, name: cover, widget: image, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - { label: 看完日期, name: finishedDate, widget: datetime, required: false }
+      - { label: 草稿, name: draft, widget: boolean, default: false }
+      - { label: 正文, name: body, widget: markdown }
+      - { label: 平台, name: platform, widget: string, required: false }
+      - { label: 进度, name: progress, widget: string, required: false }
+
+  # ===== 收藏 · 视频 =====
+  - name: videos
+    label: 收藏 · 视频
+    folder: src/content/collections/videos
+    create: true
+    delete: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - { label: 作者, name: author, widget: string, required: false }
+      - { label: 评分（1-5）, name: rating, widget: number, value_type: int, min: 1, max: 5, required: false }
+      - { label: 状态, name: status, widget: select, options: [wishlist, ongoing, finished], default: ongoing }
+      - { label: 链接, name: link, widget: string, required: false }
+      - { label: 封面图, name: cover, widget: image, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - { label: 看完日期, name: finishedDate, widget: datetime, required: false }
+      - { label: 草稿, name: draft, widget: boolean, default: false }
+      - { label: 正文, name: body, widget: markdown }
+      - { label: 创作者, name: creator, widget: string, required: false }
+      - { label: 类型, name: type, widget: select, options: [movie, series, video, anime], default: video }
+
+  # ===== 收藏 · 链接 =====
+  - name: links
+    label: 收藏 · 链接
+    folder: src/content/collections/links
+    create: true
+    delete: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - { label: 作者, name: author, widget: string, required: false }
+      - { label: 评分（1-5）, name: rating, widget: number, value_type: int, min: 1, max: 5, required: false }
+      - { label: 状态, name: status, widget: select, options: [wishlist, ongoing, finished], default: ongoing }
+      - { label: 链接, name: link, widget: string, required: false }
+      - { label: 封面图, name: cover, widget: image, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - { label: 收藏日期, name: finishedDate, widget: datetime, required: false }
+      - { label: 草稿, name: draft, widget: boolean, default: false }
+      - { label: 正文, name: body, widget: markdown }
+      - { label: 站点, name: site, widget: string }
+
+  # ===== 一闪念 =====
+  - name: notes
+    label: 一闪念
+    folder: src/content/notes
+    create: true
+    delete: true
+    extension: md
+    format: frontmatter
+    slug: "{{slug}}"
+    identifier_field: published
+    fields:
+      - { label: 日期, name: published, widget: datetime }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - { label: 草稿, name: draft, widget: boolean, default: false }
+      - { label: 内容, name: body, widget: markdown }
