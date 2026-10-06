@@ -14,8 +14,8 @@ const CMS_COLLECTIONS = {
       { key: 'tags', label: '标签', type: 'tags' },
       { key: 'category', label: '分类', type: 'select', options: ['tech', 'life'] },
       { key: 'cover', label: '封面图', type: 'text', hint: '/uploads/xxx.png 或完整链接' },
-      { key: 'draft', label: '草稿', type: 'boolean' },
-      { key: 'visible', label: '公开', type: 'boolean' },
+      { key: 'draft', label: '草稿', type: 'boolean', default: false },
+      { key: 'visible', label: '公开', type: 'boolean', default: true },
     ],
   },
   projects: {
@@ -33,8 +33,8 @@ const CMS_COLLECTIONS = {
       { key: 'tags', label: '标签', type: 'tags' },
       { key: 'startDate', label: '开始日期', type: 'date', required: true },
       { key: 'endDate', label: '结束日期', type: 'date' },
-      { key: 'featured', label: '精选', type: 'boolean' },
-      { key: 'draft', label: '草稿', type: 'boolean' },
+      { key: 'featured', label: '精选', type: 'boolean', default: false },
+      { key: 'draft', label: '草稿', type: 'boolean', default: false },
     ],
   },
   notes: {
@@ -45,7 +45,7 @@ const CMS_COLLECTIONS = {
     fields: [
       { key: 'published', label: '时间', type: 'datetime', required: true },
       { key: 'tags', label: '标签', type: 'tags' },
-      { key: 'draft', label: '草稿', type: 'boolean' },
+      { key: 'draft', label: '草稿', type: 'boolean', default: false },
     ],
   },
   books: {
@@ -62,8 +62,8 @@ const CMS_COLLECTIONS = {
       { key: 'cover', label: '封面图', type: 'text' },
       { key: 'tags', label: '标签', type: 'tags' },
       { key: 'finishedDate', label: '读完日期', type: 'date' },
-      { key: 'reread', label: '重读', type: 'boolean' },
-      { key: 'draft', label: '草稿', type: 'boolean' },
+      { key: 'reread', label: '重读', type: 'boolean', default: false },
+      { key: 'draft', label: '草稿', type: 'boolean', default: false },
     ],
   },
   music: {
@@ -81,7 +81,7 @@ const CMS_COLLECTIONS = {
       { key: 'cover', label: '封面图', type: 'text' },
       { key: 'tags', label: '标签', type: 'tags' },
       { key: 'finishedDate', label: '完成日期', type: 'date' },
-      { key: 'draft', label: '草稿', type: 'boolean' },
+      { key: 'draft', label: '草稿', type: 'boolean', default: false },
     ],
   },
   novels: {
@@ -99,7 +99,7 @@ const CMS_COLLECTIONS = {
       { key: 'cover', label: '封面图', type: 'text' },
       { key: 'tags', label: '标签', type: 'tags' },
       { key: 'finishedDate', label: '完结日期', type: 'date' },
-      { key: 'draft', label: '草稿', type: 'boolean' },
+      { key: 'draft', label: '草稿', type: 'boolean', default: false },
     ],
   },
   videos: {
@@ -116,7 +116,7 @@ const CMS_COLLECTIONS = {
       { key: 'cover', label: '封面图', type: 'text' },
       { key: 'tags', label: '标签', type: 'tags' },
       { key: 'finishedDate', label: '看完日期', type: 'date' },
-      { key: 'draft', label: '草稿', type: 'boolean' },
+      { key: 'draft', label: '草稿', type: 'boolean', default: false },
     ],
   },
   links: {
@@ -130,7 +130,7 @@ const CMS_COLLECTIONS = {
       { key: 'link', label: '链接', type: 'url', required: true },
       { key: 'tags', label: '标签', type: 'tags' },
       { key: 'status', label: '状态', type: 'select', options: ['wishlist', 'ongoing', 'finished'] },
-      { key: 'draft', label: '草稿', type: 'boolean' },
+      { key: 'draft', label: '草稿', type: 'boolean', default: false },
     ],
   },
 };

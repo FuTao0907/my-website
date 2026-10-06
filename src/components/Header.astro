@@ -90,96 +90,119 @@ const path = Astro.url.pathname;
 </header>
 
 <script>
-  // 暗色切换
-  const toggle = document.getElementById('theme-toggle');
-  toggle?.addEventListener('click', async (e) => {
-    const btn = e.currentTarget as HTMLElement;
-    const rect = btn.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-    const radius = Math.hypot(
-      Math.max(x, window.innerWidth - x),
-      Math.max(y, window.innerHeight - y),
-    );
-    const isDark = document.documentElement.classList.contains('dark');
-    const apply = () => {
-      document.documentElement.classList.toggle('dark');
-      localStorage.theme = isDark ? 'light' : 'dark';
-    };
-
-    if (!document.startViewTransition) {
-      apply();
-      return;
-    }
-
-    // 标记暗色切换过渡（global.css 据此隔离：圆形扩散 vs 页面切换动画）
-    // 防御：清除上次可能残留的标记，避免 :not(.theme-switch) 规则失效
-    document.documentElement.classList.remove('theme-switch');
-    document.documentElement.classList.add('theme-switch');
-
-    const transition = document.startViewTransition(apply);
-    await transition.ready;
-    const anim = document.documentElement.animate(
-      {
-        clipPath: [
-          `circle(0px at ${x}px ${y}px)`,
-          `circle(${radius}px at ${x}px ${y}px)`,
-        ],
-      },
-      {
-        duration: 500,
-        easing: 'ease-in-out',
-        pseudoElement: '::view-transition-new(root)',
-      },
-    );
-    // 动画完成后清理标记；transition.finished 可能挂起，不依赖它
-    // （WAAPI 动画自身的 finished 只等 500ms 动画播放完，可靠）
-    const cleanup = () => document.documentElement.classList.remove('theme-switch');
-    anim.finished.then(cleanup).catch(cleanup);
-    setTimeout(cleanup, 700); // 兜底：动画时长 + 余量后强制清理
-  });
-
-  // 移动端菜单
-  const menuBtn = document.getElementById('mobile-menu-btn');
-  const menu = document.getElementById('mobile-menu');
-  const iconOpen = document.getElementById('icon-open');
-  const iconClose = document.getElementById('icon-close');
+  // 主题切换 + 移动菜单
+  // ClientRouter（View Transitions）导航会替换 DOM；若脚本在 swap 前执行，绑定会落在旧节点上
+  // 导致新页按钮失效（实测：导航后主题切换无响应）。
+  // 统一 bindHeader() + astro:page-load：每次导航后新 DOM 就绪再绑定；data-bound 防重复绑定。
 
   function closeMenu() {
-    menu?.classList.add('hidden');
-    iconOpen?.classList.remove('hidden');
-    iconClose?.classList.add('hidden');
-    menuBtn?.setAttribute('aria-expanded', 'false');
-    menuBtn?.setAttribute('aria-label', '打开菜单');
+    document.getElementById('mobile-menu')?.classList.add('hidden');
+    document.getElementById('icon-open')?.classList.remove('hidden');
+    document.getElementById('icon-close')?.classList.add('hidden');
+    document.getElementById('mobile-menu-btn')?.setAttribute('aria-expanded', 'false');
+    document.getElementById('mobile-menu-btn')?.setAttribute('aria-label', '打开菜单');
   }
 
-  menuBtn?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isOpen = !menu?.classList.contains('hidden');
-    if (isOpen) {
-      closeMenu();
-    } else {
-      menu?.classList.remove('hidden');
-      iconOpen?.classList.add('hidden');
-      iconClose?.classList.remove('hidden');
-      menuBtn.setAttribute('aria-expanded', 'true');
-      menuBtn.setAttribute('aria-label', '关闭菜单');
-    }
-  });
+  function bindHeader() {
+    // 暗色切换（圆形扩散）
+    const toggle = document.getElementById('theme-toggle');
+    if (toggle && !toggle.dataset.bound) {
+      toggle.dataset.bound = '1';
+      toggle.addEventListener('click', async (e) => {
+        const btn = e.currentTarget as HTMLElement;
+        const rect = btn.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        const radius = Math.hypot(
+          Math.max(x, window.innerWidth - x),
+          Math.max(y, window.innerHeight - y),
+        );
+        const isDark = document.documentElement.classList.contains('dark');
+        const apply = () => {
+          document.documentElement.classList.toggle('dark');
+          localStorage.theme = isDark ? 'light' : 'dark';
+        };
 
-  // 点击菜单外部时关闭
-  document.addEventListener('click', (e) => {
-    if (!menu || menu.classList.contains('hidden')) return;
-    const target = e.target as Node;
-    if (!menu.contains(target) && !menuBtn?.contains(target)) {
-      closeMenu();
-    }
-  });
+        if (!document.startViewTransition) {
+          apply();
+          return;
+        }
 
-  // 窗口 resize 到桌面端时重置菜单状态
-  window.addEventListener('resize', () => {
-    if (window.innerWidth >= 768) {
-      closeMenu();
+        // 标记暗色切换过渡（global.css 据此隔离：圆形扩散 vs 页面切换动画）
+        // 防御：清除上次可能残留的标记，避免 :not(.theme-switch) 规则失效
+        document.documentElement.classList.remove('theme-switch');
+        document.documentElement.classList.add('theme-switch');
+
+        const transition = document.startViewTransition(apply);
+        await transition.ready;
+        const anim = document.documentElement.animate(
+          {
+            clipPath: [
+              `circle(0px at ${x}px ${y}px)`,
+              `circle(${radius}px at ${x}px ${y}px)`,
+            ],
+          },
+          {
+            duration: 500,
+            easing: 'ease-in-out',
+            pseudoElement: '::view-transition-new(root)',
+          },
+        );
+        // 动画完成后清理标记；transition.finished 可能挂起，不依赖它
+        const cleanup = () => document.documentElement.classList.remove('theme-switch');
+        anim.finished.then(cleanup).catch(cleanup);
+        setTimeout(cleanup, 700); // 兜底：动画时长 + 余量后强制清理
+      });
     }
-  });
+
+    // 移动端菜单
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const menu = document.getElementById('mobile-menu');
+    const iconOpen = document.getElementById('icon-open');
+    const iconClose = document.getElementById('icon-close');
+    if (menuBtn && !menuBtn.dataset.bound) {
+      menuBtn.dataset.bound = '1';
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = !menu?.classList.contains('hidden');
+        if (isOpen) {
+          closeMenu();
+        } else {
+          menu?.classList.remove('hidden');
+          iconOpen?.classList.add('hidden');
+          iconClose?.classList.remove('hidden');
+          menuBtn.setAttribute('aria-expanded', 'true');
+          menuBtn.setAttribute('aria-label', '关闭菜单');
+        }
+      });
+    }
+  }
+
+  // 首屏 + 每次 ClientRouter 导航完成后（新 DOM 就绪）重新绑定
+  bindHeader();
+  document.addEventListener('astro:page-load', bindHeader);
+
+  // 点击菜单外部时关闭（document 级监听只注册一次；元素动态获取，跨导航安全）
+  if (!window.__menuOutsideBound) {
+    window.__menuOutsideBound = true;
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('mobile-menu');
+      const menuBtn = document.getElementById('mobile-menu-btn');
+      if (!menu || menu.classList.contains('hidden')) return;
+      const target = e.target as Node;
+      if (!menu.contains(target) && !menuBtn?.contains(target)) {
+        closeMenu();
+      }
+    });
+  }
+
+  // 窗口 resize 到桌面端时重置菜单状态（只注册一次）
+  if (!window.__menuResizeBound) {
+    window.__menuResizeBound = true;
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 768) {
+        closeMenu();
+      }
+    });
+  }
 </script>

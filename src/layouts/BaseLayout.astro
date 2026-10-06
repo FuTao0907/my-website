@@ -122,20 +122,25 @@ const ogImageURL = ogImage ? new URL(ogImage, SITE.url).toString() : undefined;
     }, 2200);
   };
 
-  // 回到顶部按钮
-  const backToTop = document.getElementById('back-to-top');
-  if (backToTop) {
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 300) {
-        backToTop.classList.remove('opacity-0', 'invisible');
-      } else {
-        backToTop.classList.add('opacity-0', 'invisible');
-      }
-    });
-    backToTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+  // 回到顶部按钮（ClientRouter 导航后 DOM 被替换，需每次新 DOM 就绪重新绑定）
+  function bindCommon() {
+    const backToTop = document.getElementById('back-to-top');
+    if (backToTop && !backToTop.dataset.bound) {
+      backToTop.dataset.bound = '1';
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+          backToTop.classList.remove('opacity-0', 'invisible');
+        } else {
+          backToTop.classList.add('opacity-0', 'invisible');
+        }
+      });
+      backToTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
   }
+  bindCommon();
+  document.addEventListener('astro:page-load', bindCommon);
 
   // 路由进度条（P0-1 方案 C：点击立即反馈 + 新页补满 100%）
   const progress = document.getElementById('route-progress');
@@ -168,41 +173,50 @@ const ogImageURL = ogImage ? new URL(ogImage, SITE.url).toString() : undefined;
     }, 300);
   }
 
-  // 捕获阶段拦截内部链接点击（先于 ClientRouter，点击即显示进度条）
-  document.addEventListener(
-    'click',
-    (e) => {
-      const el = e.target as Element | null;
-      const a = el?.closest?.('a');
-      if (!a) return;
-      const href = a.getAttribute('href');
-      if (!href || href.startsWith('#') || a.target === '_blank' || a.hasAttribute('download')) {
+  // 捕获阶段拦截内部链接点击（先于 ClientRouter，点击即显示进度条）——只注册一次
+  if (!window.__progressClickBound) {
+    window.__progressClickBound = true;
+    document.addEventListener(
+      'click',
+      (e) => {
+        const el = e.target as Element | null;
+        const a = el?.closest?.('a');
+        if (!a) return;
+        const href = a.getAttribute('href');
+        if (!href || href.startsWith('#') || a.target === '_blank' || a.hasAttribute('download')) {
+          return;
+        }
+        try {
+          const url = new URL(a.href, location.href);
+          if (url.origin !== location.origin) return;
+        } catch {
+          return;
+        }
+        startRouteProgress();
+      },
+      true,
+    );
+  }
+
+  // ClientRouter 每次导航完成（新页 ready）后触发——只注册一次
+  if (!window.__progressNavBound) {
+    window.__progressNavBound = true;
+    document.addEventListener('astro:page-load', finishRouteProgress);
+  }
+
+  // 键盘快捷键：按 / 快速打开搜索——只注册一次
+  if (!window.__keyShortcutBound) {
+    window.__keyShortcutBound = true;
+    document.addEventListener('keydown', (e) => {
+      // 忽略输入框/文本域中的按键
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
         return;
       }
-      try {
-        const url = new URL(a.href, location.href);
-        if (url.origin !== location.origin) return;
-      } catch {
-        return;
+      if (e.key === '/') {
+        e.preventDefault();
+        window.location.href = '/search';
       }
-      startRouteProgress();
-    },
-    true,
-  );
-
-  // ClientRouter 每次导航完成（新页 ready）后触发
-  document.addEventListener('astro:page-load', finishRouteProgress);
-
-  // 键盘快捷键：按 / 快速打开搜索
-  document.addEventListener('keydown', (e) => {
-    // 忽略输入框/文本域中的按键
-    const target = e.target as HTMLElement;
-    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
-      return;
-    }
-    if (e.key === '/') {
-      e.preventDefault();
-      window.location.href = '/search';
-    }
-  });
+    });
+  }
 </script>

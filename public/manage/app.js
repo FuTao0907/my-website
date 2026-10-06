@@ -279,7 +279,8 @@ function renderForm(collKey, filename, initial, sha) {
       row.className = 'check-row';
       const cb = document.createElement('input');
       cb.type = 'checkbox';
-      cb.checked = !!initial[f.key];
+      // 新建（initial 无该字段）时用字段 default；编辑时用已存值
+      cb.checked = initial[f.key] !== undefined ? !!initial[f.key] : !!f.default;
       fieldState[f.key] = cb;
       const span = document.createElement('span');
       span.textContent = f.label;
