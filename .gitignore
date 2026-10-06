@@ -11,6 +11,8 @@ yarn-error.log*
 # environment variables
 .env
 .env.production
+# wrangler local dev vars（含敏感 token，禁止提交）
+.dev.vars
 # wrangler local cache
 .wrangler/
 # macOS

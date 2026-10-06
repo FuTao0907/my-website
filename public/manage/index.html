@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
+    <link rel="manifest" href="/admin/manifest.json" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>内容管理 · Ange's website</title>
+    <link rel="stylesheet" href="/manage/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <button class="brand" data-nav="list/blog" title="返回列表">Ange's 内容管理</button>
+      <nav class="nav" id="nav" hidden>
+        <button data-nav="list/blog">博客</button>
+        <button data-nav="list/notes">一闪念</button>
+        <button data-nav="list/projects">项目</button>
+        <button data-nav="list/books">书</button>
+        <button data-nav="list/music">音乐</button>
+        <button data-nav="list/novels">网文</button>
+        <button data-nav="list/videos">视频</button>
+        <button data-nav="list/links">链接</button>
+      </nav>
+      <button class="logout" id="logout" hidden>退出</button>
+    </header>
+
+    <main id="view" class="view"></main>
+
+    <div id="toast" class="toast" hidden></div>
+
+    <script src="/manage/collections.js"></script>
+    <script src="/manage/app.js"></script>
+  </body>
+</html>
