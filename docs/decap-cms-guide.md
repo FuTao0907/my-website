@@ -1,5 +1,7 @@
 # Decap CMS 内容管理后台 · 配置与使用指南
 
+> ⚠️ **当前状态（2026-10-06）**：本方案（Decap /admin + GitHub OAuth）因 **GitHub 账号级 OAuth 风控**暂不可用——已登录 GitHub 会话访问 authorize URL 必 404，Decap 所有登录路线均被卡死。当前实际使用**自写 CMS（/manage）**，见 [manage-cms-guide.md](manage-cms-guide.md)。本文档保留，待风控解除后恢复 Decap。
+>
 > 对应版本：v1.3（2026-10-05 冻结）
 > 管理入口：`https://philia093.ink/admin/`
 > 说明：本文档按"他人可 100% 复刻"标准编写——从零配置到日常使用全覆盖。
